@@ -3,1221 +3,1039 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexusAI — White-label AI Platform</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>VoiceLab — AI Voice Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
 :root {
-  --ink:#0a0a0f; --paper:#f5f3ef; --warm:#ede9e2; --mid:#c8c2b8; --muted:#8f8880;
-  --accent:#e85d2f; --accent2:#3d7fff; --gold:#c9a84c; --card:#ffffff;
-  --border:rgba(10,10,15,.10); --shadow:0 2px 24px rgba(10,10,15,.08);
-  --radius:16px; --font-display:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
-  --transition:.25s cubic-bezier(.4,0,.2,1);
+  --white:   #ffffff;
+  --bg:      #f4f5f7;
+  --surface: #ffffff;
+  --border:  #e2e4e9;
+  --border2: #c8cad1;
+  --text:    #0f1117;
+  --text2:   #4a4f5e;
+  --text3:   #9097a8;
+  --accent:  #5c4bff;
+  --accent-h:#4a39ee;
+  --accent-l:rgba(92,75,255,.08);
+  --accent-l2:rgba(92,75,255,.15);
+  --green:   #16a34a;
+  --green-l: rgba(22,163,74,.08);
+  --red:     #dc2626;
+  --red-l:   rgba(220,38,38,.08);
+  --radius:  8px;
+  --radius-lg:16px;
+  --font:    'Inter', sans-serif;
+  --shadow:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.12);
+  --transition:.18s ease;
 }
-html { scroll-behavior:smooth; }
-body { font-family:var(--font-body); background:var(--paper); color:var(--ink); min-height:100vh; overflow-x:hidden; }
-body::before { content:''; position:fixed; inset:0; z-index:999; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); opacity:.35; }
-.screen { display:none; min-height:100vh; }
-.screen.active { display:flex; }
-@keyframes cardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-@keyframes spin { to{transform:rotate(360deg)} }
-@keyframes bounce { 0%,80%,100%{transform:scale(.8);opacity:.4} 40%{transform:scale(1.2);opacity:1} }
 
-/* LOADING */
-#loading-screen { align-items:center; justify-content:center; background:var(--paper); flex-direction:column; gap:16px; }
-.loading-logo { font-family:var(--font-display); font-size:24px; font-weight:800; display:flex; align-items:center; gap:8px; }
-.dot { width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; flex-shrink:0; }
-.loading-dots { display:flex; gap:6px; }
-.loading-dots span { width:6px; height:6px; border-radius:50%; background:var(--mid); animation:bounce .8s ease infinite; }
-.loading-dots span:nth-child(2){animation-delay:.15s} .loading-dots span:nth-child(3){animation-delay:.3s}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
-/* SHARED FORM */
-.field { margin-bottom:16px; }
-.field label { display:block; font-size:12px; font-weight:600; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; margin-bottom:7px; }
-.field input { width:100%; padding:12px 14px; background:var(--warm); border:1.5px solid transparent; border-radius:12px; font-family:var(--font-body); font-size:14px; color:var(--ink); outline:none; transition:var(--transition); }
-.field input::placeholder { color:var(--mid); }
-.field input:focus { background:var(--card); border-color:var(--accent2); box-shadow:0 0 0 3px rgba(61,127,255,.12); }
-.field-hint { font-size:11px; color:var(--mid); margin-top:5px; }
-.field-hint a { color:var(--accent2); text-decoration:none; font-weight:500; }
-.btn-primary { width:100%; padding:14px; background:var(--ink); color:#fff; border:none; border-radius:12px; font-family:var(--font-display); font-size:14px; font-weight:600; letter-spacing:.02em; cursor:pointer; transition:var(--transition); margin-top:4px; position:relative; overflow:hidden; }
-.btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 60%); }
-.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(10,10,15,.2); }
-.btn-primary:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-.form-msg { font-size:13px; padding:10px 14px; border-radius:10px; margin-bottom:16px; display:none; }
-.form-msg.error  { background:#fef2ef; color:#c93a1a; border:1px solid #f9cdc3; }
-.form-msg.success{ background:#eefaf3; color:#1a7a42; border:1px solid #b3e6c8; }
-.form-msg.info   { background:#eff4ff; color:#2a4a99; border:1px solid #c7d8ff; }
-.form-msg.show   { display:block; }
-.spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; margin-right:8px; vertical-align:middle; }
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex}
 
-/* SETUP SCREEN */
-#setup-screen { flex-direction:column; align-items:center; justify-content:center; padding:24px; background:var(--paper); position:relative; }
-#setup-screen::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(232,93,47,.08) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 90% 80%,rgba(61,127,255,.07) 0%,transparent 60%); }
-.setup-card { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:44px; width:100%; max-width:500px; box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,.7) inset; position:relative; z-index:1; animation:cardIn .5s cubic-bezier(.22,1,.36,1) both; }
-.setup-logo { font-family:var(--font-display); font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px; margin-bottom:24px; }
-.setup-title { font-family:var(--font-display); font-size:22px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px; }
-.setup-sub { font-size:13px; color:var(--muted); margin-bottom:24px; line-height:1.6; }
-.step-badges { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
-.step-badge { display:flex; align-items:center; gap:6px; background:var(--warm); border:1px solid var(--border); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; color:var(--muted); }
-.step-num { width:18px; height:18px; border-radius:50%; background:var(--mid); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
-.info-box { background:#eff4ff; border:1px solid #c7d8ff; border-radius:12px; padding:14px 16px; margin-bottom:24px; font-size:13px; color:#2a4a99; line-height:1.7; }
-.info-box strong { font-weight:700; display:block; margin-bottom:4px; }
-.info-box a { color:#2a4a99; font-weight:600; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* AUTH SCREEN */
-#auth-screen { flex-direction:column; align-items:center; justify-content:center; padding:24px; background:var(--paper); position:relative; }
-#auth-screen::after { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse 60% 40% at 10% 20%,rgba(232,93,47,.08) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 90% 80%,rgba(61,127,255,.07) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(201,168,76,.05) 0%,transparent 70%); }
-.auth-logo { font-family:var(--font-display); font-size:22px; font-weight:800; letter-spacing:-.5px; color:var(--ink); position:fixed; top:28px; left:32px; z-index:10; display:flex; align-items:center; gap:8px; }
-.auth-card { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:48px 44px 44px; width:100%; max-width:420px; box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,.7) inset; position:relative; z-index:1; animation:cardIn .5s cubic-bezier(.22,1,.36,1) both; }
-.auth-tagline { font-family:var(--font-display); font-size:28px; font-weight:700; line-height:1.2; letter-spacing:-.5px; margin-bottom:8px; }
-.auth-tagline span { color:var(--accent); }
-.auth-sub { font-size:14px; color:var(--muted); margin-bottom:32px; line-height:1.6; }
-.auth-tabs { display:flex; background:var(--warm); border-radius:12px; padding:4px; margin-bottom:28px; }
-.auth-tab { flex:1; padding:9px; font-family:var(--font-body); font-size:14px; font-weight:500; border:none; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); transition:var(--transition); }
-.auth-tab.active { background:var(--card); color:var(--ink); box-shadow:0 1px 6px rgba(10,10,15,.1); }
-.btn-google { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:13px 20px; background:var(--card); border:1.5px solid var(--border); border-radius:12px; font-family:var(--font-body); font-size:14px; font-weight:500; color:var(--ink); cursor:pointer; transition:var(--transition); margin-bottom:20px; }
-.btn-google:hover { background:var(--warm); border-color:var(--mid); transform:translateY(-1px); box-shadow:0 4px 12px rgba(10,10,15,.08); }
-.btn-google:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-.divider { display:flex; align-items:center; gap:12px; margin-bottom:20px; color:var(--mid); font-size:12px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; }
-.divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-.field-pw { position:relative; }
-.field-pw input { padding-right:44px; }
-.toggle-pw { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--mid); cursor:pointer; padding:0; display:flex; }
-.forgot-link { float:right; font-size:12px; color:var(--accent2); text-decoration:none; font-weight:500; }
-.auth-footer { margin-top:20px; text-align:center; font-size:12px; color:var(--muted); line-height:1.7; }
-.auth-footer a { color:var(--accent2); text-decoration:none; font-weight:500; }
-.confirm-notice { text-align:center; padding:16px 0; }
-.confirm-icon { font-size:48px; margin-bottom:16px; }
-.confirm-title { font-family:var(--font-display); font-size:22px; font-weight:800; margin-bottom:8px; }
-.confirm-sub { font-size:14px; color:var(--muted); line-height:1.6; }
-.confirm-back { margin-top:20px; background:none; border:1.5px solid var(--border); border-radius:12px; padding:10px 20px; font-family:var(--font-body); font-size:14px; cursor:pointer; color:var(--muted); transition:var(--transition); }
-.confirm-back:hover { border-color:var(--mid); color:var(--ink); }
-.demo-badge { display:inline-block; background:var(--warm); border:1px solid var(--border); border-radius:20px; font-size:11px; color:var(--muted); padding:3px 10px; margin-bottom:16px; }
+/* ── LOADING ── */
+#loading-screen{align-items:center;justify-content:center;flex-direction:column;gap:16px;background:var(--white)}
+.loading-wordmark{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.loading-wordmark span{color:var(--accent)}
+.loading-dots{display:flex;gap:6px}
+.loading-dots i{width:5px;height:5px;border-radius:50%;background:var(--border2);display:block;animation:pulse .9s ease infinite}
+.loading-dots i:nth-child(2){animation-delay:.2s}
+.loading-dots i:nth-child(3){animation-delay:.4s}
 
-/* DASHBOARD */
-#dashboard-screen { flex-direction:row; background:var(--warm); }
-.sidebar { width:240px; min-height:100vh; background:var(--ink); display:flex; flex-direction:column; padding:28px 16px; flex-shrink:0; position:sticky; top:0; height:100vh; }
-.sidebar-logo { font-family:var(--font-display); font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px; padding:0 8px; margin-bottom:36px; }
-.sidebar-section-label { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.3); padding:0 10px; margin:20px 0 8px; }
-.nav-item { display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; color:rgba(255,255,255,.55); font-size:14px; font-weight:500; cursor:pointer; transition:var(--transition); user-select:none; text-decoration:none; }
-.nav-item svg { flex-shrink:0; opacity:.7; }
-.nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
-.nav-item.active { background:rgba(255,255,255,.1); color:#fff; }
-.nav-item.active svg { opacity:1; }
-.nav-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:20px; line-height:1.4; }
-.sidebar-bottom { margin-top:auto; border-top:1px solid rgba(255,255,255,.08); padding-top:16px; }
-.user-pill { display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; }
-.user-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--gold)); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:13px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
-.user-avatar img { width:100%; height:100%; object-fit:cover; }
-.user-info { min-width:0; }
-.user-name { font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.user-role { font-size:11px; color:rgba(255,255,255,.4); }
-#logout-btn { background:none; border:none; color:rgba(255,255,255,.4); font-family:var(--font-body); font-size:13px; cursor:pointer; padding:10px; display:flex; align-items:center; gap:8px; border-radius:8px; transition:var(--transition); width:100%; }
-#logout-btn:hover { color:rgba(255,255,255,.8); background:rgba(255,255,255,.06); }
-.main { flex:1; overflow-y:auto; padding:40px 48px; min-width:0; }
-.page { display:none; }
-.page.active { display:block; animation:fadeUp .3s ease both; }
-.page-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:36px; }
-.page-title { font-family:var(--font-display); font-size:32px; font-weight:800; letter-spacing:-.7px; line-height:1; }
-.page-title .sub { display:block; font-family:var(--font-body); font-size:14px; font-weight:400; color:var(--muted); letter-spacing:0; margin-top:6px; }
-.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
-.stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:relative; overflow:hidden; transition:var(--transition); }
-.stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
-.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
-.stat-card:nth-child(1)::before{background:var(--accent)} .stat-card:nth-child(2)::before{background:var(--accent2)} .stat-card:nth-child(3)::before{background:var(--gold)} .stat-card:nth-child(4)::before{background:#22c55e}
-.stat-label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
-.stat-value { font-family:var(--font-display); font-size:30px; font-weight:800; letter-spacing:-1px; margin-bottom:6px; }
-.stat-delta { font-size:12px; color:var(--muted); }
-.stat-delta .up{color:#22c55e} .stat-delta .down{color:var(--accent)}
-.two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
-.card-head { padding:20px 24px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
-.card-title { font-family:var(--font-display); font-size:15px; font-weight:700; letter-spacing:-.2px; }
-.card-body { padding:20px 24px; }
-.tools-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-.tool-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); padding:24px; cursor:pointer; transition:var(--transition); position:relative; overflow:hidden; }
-.tool-card::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--tool-color,var(--accent)) 0%,transparent 60%); opacity:0; transition:var(--transition); }
-.tool-card:hover { transform:translateY(-3px); border-color:var(--tool-color,var(--accent)); box-shadow:0 8px 28px rgba(10,10,15,.1); }
-.tool-card:hover::after { opacity:.04; }
-.tool-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; font-size:22px; background:rgba(0,0,0,.04); }
-.tool-name { font-family:var(--font-display); font-size:15px; font-weight:700; margin-bottom:6px; }
-.tool-desc { font-size:13px; color:var(--muted); line-height:1.5; }
-.tool-badge { position:absolute; top:16px; right:16px; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:20px; background:var(--warm); color:var(--muted); border:1px solid var(--border); }
-.tool-badge.soon { background:#fff8ec; color:#a07020; border-color:#f0d890; }
-.activity-item { display:flex; align-items:flex-start; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); }
-.activity-item:last-child { border-bottom:none; }
-.activity-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
-.activity-text { font-size:13px; line-height:1.5; }
-.activity-text strong { font-weight:600; }
-.activity-time { font-size:12px; color:var(--muted); margin-top:2px; }
-.usage-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-.usage-label { font-size:13px; font-weight:500; flex:0 0 100px; }
-.usage-bar { flex:1; height:6px; background:var(--warm); border-radius:99px; overflow:hidden; }
-.usage-fill { height:100%; border-radius:99px; }
-.usage-pct { font-size:12px; color:var(--muted); flex:0 0 36px; text-align:right; }
-.badge { display:inline-flex; align-items:center; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
-.badge-green { background:#e8f9ee; color:#1a7a42; }
-.plan-card { background:var(--ink); color:#fff; border-radius:var(--radius); padding:28px; position:relative; overflow:hidden; height:100%; }
-.plan-card::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle,rgba(232,93,47,.3) 0%,transparent 70%); }
-.plan-name { font-family:var(--font-display); font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
-.plan-title { font-family:var(--font-display); font-size:24px; font-weight:800; margin-bottom:4px; }
-.plan-price { font-size:13px; color:rgba(255,255,255,.5); margin-bottom:20px; }
-.plan-features { list-style:none; }
-.plan-features li { font-size:13px; color:rgba(255,255,255,.7); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-.plan-features li::before { content:'✓'; color:var(--accent); font-weight:700; }
-.btn-upgrade { display:inline-block; margin-top:20px; background:var(--accent); color:#fff; border:none; font-family:var(--font-display); font-size:13px; font-weight:700; padding:10px 20px; border-radius:10px; cursor:pointer; transition:var(--transition); }
-.btn-upgrade:hover { background:#d14a20; transform:translateY(-1px); }
-.welcome-banner { background:linear-gradient(135deg,var(--ink) 0%,#1a1a2e 100%); border-radius:20px; padding:32px 36px; margin-bottom:28px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; }
-.welcome-banner::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 50% 80% at 80% 50%,rgba(61,127,255,.15) 0%,transparent 60%); }
-.welcome-left { position:relative; z-index:1; }
-.welcome-greeting { font-family:var(--font-display); font-size:26px; font-weight:800; color:#fff; letter-spacing:-.5px; margin-bottom:6px; }
-.welcome-greeting span { color:var(--accent); }
-.welcome-sub { font-size:14px; color:rgba(255,255,255,.5); }
-.welcome-right { position:relative; z-index:1; display:flex; gap:12px; }
-.welcome-stat { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px 18px; text-align:center; }
-.welcome-stat-val { font-family:var(--font-display); font-size:22px; font-weight:800; color:#fff; }
-.welcome-stat-lbl { font-size:11px; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
-.quick-actions { display:flex; gap:10px; margin-bottom:28px; flex-wrap:wrap; }
-.qa-btn { display:flex; align-items:center; gap:7px; padding:9px 16px; background:var(--card); border:1.5px solid var(--border); border-radius:10px; font-family:var(--font-body); font-size:13px; font-weight:500; color:var(--ink); cursor:pointer; transition:var(--transition); }
-.qa-btn:hover { background:var(--warm); border-color:var(--mid); transform:translateY(-1px); }
-.settings-section { margin-bottom:32px; }
-.settings-section-title { font-family:var(--font-display); font-size:14px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
-.settings-row { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; }
-.settings-row-label { font-size:14px; font-weight:500; margin-bottom:2px; }
-.settings-row-desc { font-size:12px; color:var(--muted); }
-.toggle { width:44px; height:24px; background:var(--mid); border-radius:99px; position:relative; cursor:pointer; transition:var(--transition); border:none; }
-.toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:var(--transition); box-shadow:0 1px 4px rgba(0,0,0,.2); }
-.toggle.on { background:var(--accent2); }
-.toggle.on::after { left:calc(100% - 21px); }
-/* ── MODALS ──────────────────────────────── */
-.modal-overlay { position:fixed; inset:0; background:rgba(10,10,15,.5); backdrop-filter:blur(6px); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px; }
-.modal-overlay.open { display:flex; animation:fadeIn .2s ease; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-.modal { background:var(--card); border-radius:24px; width:100%; max-width:640px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 80px rgba(10,10,15,.2); animation:slideUp .3s cubic-bezier(.22,1,.36,1); }
-@keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-.modal-header { padding:24px 28px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
-.modal-title { font-family:var(--font-display); font-size:20px; font-weight:800; letter-spacing:-.3px; display:flex; align-items:center; gap:10px; }
-.modal-title .micon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
-.modal-close { width:32px; height:32px; border-radius:50%; border:none; background:var(--warm); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:18px; transition:var(--transition); }
-.modal-close:hover { background:var(--mid); color:var(--ink); }
-.modal-body { padding:24px 28px; }
-.modal-tabs { display:flex; background:var(--warm); border-radius:12px; padding:4px; margin-bottom:24px; }
-.modal-tab { flex:1; padding:8px; font-family:var(--font-body); font-size:13px; font-weight:500; border:none; background:transparent; border-radius:9px; cursor:pointer; color:var(--muted); transition:var(--transition); }
-.modal-tab.active { background:var(--card); color:var(--ink); box-shadow:0 1px 6px rgba(10,10,15,.1); }
-.modal-tab-panel { display:none; }
-.modal-tab-panel.active { display:block; }
-.m-field { margin-bottom:16px; }
-.m-field label { display:block; font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; margin-bottom:7px; }
-.m-field textarea, .m-field input, .m-field select { width:100%; padding:11px 14px; background:var(--warm); border:1.5px solid transparent; border-radius:12px; font-family:var(--font-body); font-size:14px; color:var(--ink); outline:none; transition:var(--transition); resize:vertical; }
-.m-field textarea:focus, .m-field input:focus, .m-field select:focus { background:var(--card); border-color:var(--accent2); box-shadow:0 0 0 3px rgba(61,127,255,.12); }
-.m-field textarea { min-height:100px; }
-.m-field .char-count { font-size:11px; color:var(--mid); text-align:right; margin-top:4px; }
-.modal-footer { padding:16px 28px 24px; display:flex; align-items:center; gap:12px; }
-.btn-generate { flex:1; padding:13px; background:var(--ink); color:#fff; border:none; border-radius:12px; font-family:var(--font-display); font-size:14px; font-weight:700; cursor:pointer; transition:var(--transition); position:relative; overflow:hidden; }
-.btn-generate:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(10,10,15,.2); }
-.btn-generate:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-.btn-secondary { padding:13px 20px; background:var(--warm); color:var(--ink); border:1.5px solid var(--border); border-radius:12px; font-family:var(--font-body); font-size:14px; font-weight:500; cursor:pointer; transition:var(--transition); }
-.btn-secondary:hover { border-color:var(--mid); }
-/* Voice cards */
-.voice-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:4px; }
-.voice-card { border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; cursor:pointer; transition:var(--transition); display:flex; align-items:center; gap:10px; }
-.voice-card:hover { border-color:var(--accent2); background:var(--warm); }
-.voice-card.selected { border-color:var(--accent2); background:#eff4ff; }
-.voice-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#3d7fff,#7b5ea7); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:700; flex-shrink:0; }
-.voice-info { min-width:0; }
-.voice-name { font-size:13px; font-weight:600; }
-.voice-meta { font-size:11px; color:var(--muted); }
-/* Audio player */
-.audio-result { background:var(--warm); border-radius:14px; padding:16px 20px; display:flex; align-items:center; gap:14px; margin-top:16px; }
-.audio-result audio { flex:1; height:36px; }
-.audio-dl { padding:8px 14px; background:var(--ink); color:#fff; border:none; border-radius:10px; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); white-space:nowrap; }
-.audio-dl:hover { opacity:.85; }
-/* Slider */
-.slider-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-.slider-row label { font-size:12px; font-weight:500; flex:0 0 80px; color:var(--muted); }
-.slider-row input[type=range] { flex:1; accent-color:var(--accent2); }
-.slider-row span { font-size:12px; color:var(--ink); font-weight:600; flex:0 0 32px; text-align:right; }
-/* HeyGen status */
-.video-status { background:var(--warm); border-radius:14px; padding:20px; text-align:center; margin-top:16px; }
-.video-status-icon { font-size:36px; margin-bottom:10px; }
-.video-status-title { font-family:var(--font-display); font-size:16px; font-weight:700; margin-bottom:6px; }
-.video-status-sub { font-size:13px; color:var(--muted); }
-.video-result { margin-top:16px; }
-.video-result video { width:100%; border-radius:14px; }
-.progress-bar { height:4px; background:var(--border); border-radius:99px; overflow:hidden; margin-top:12px; }
-.progress-fill { height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); border-radius:99px; transition:width .5s ease; animation:shimmer 1.5s infinite; }
-@keyframes shimmer { 0%{opacity:1} 50%{opacity:.6} 100%{opacity:1} }
-/* Avatar grid */
-.avatar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-height:220px; overflow-y:auto; padding-right:4px; }
-.avatar-card { border:1.5px solid var(--border); border-radius:12px; padding:10px; cursor:pointer; transition:var(--transition); text-align:center; }
-.avatar-card:hover { border-color:#22c55e; }
-.avatar-card.selected { border-color:#22c55e; background:#eefaf3; }
-.avatar-thumb { width:100%; aspect-ratio:1; border-radius:8px; background:linear-gradient(135deg,#22c55e22,#3d7fff22); display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:6px; }
-.avatar-card-name { font-size:11px; font-weight:600; }
-.loading-voices { text-align:center; padding:24px; color:var(--muted); font-size:13px; }
+/* ── TOPNAV ── */
+.topnav{
+  height:60px;
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+  position:sticky;top:0;z-index:200;
+  flex-shrink:0;
+}
+.wordmark{font-size:18px;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.wordmark span{color:var(--accent)}
+.topnav-right{display:flex;align-items:center;gap:10px}
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 14px 5px 6px;
+  border:1px solid var(--border);border-radius:99px;
+  background:var(--white);cursor:pointer;transition:var(--transition);
+}
+.user-chip:hover{border-color:var(--border2);background:var(--bg)}
+.user-av{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;
+}
+.user-av img{width:100%;height:100%;object-fit:cover}
+.user-chip-name{font-size:13px;font-weight:500;color:var(--text)}
+.btn-signout{
+  padding:7px 16px;border:1px solid var(--border);border-radius:var(--radius);
+  background:transparent;font-family:var(--font);font-size:13px;font-weight:500;
+  color:var(--text2);cursor:pointer;transition:var(--transition);
+}
+.btn-signout:hover{background:var(--bg);border-color:var(--border2);color:var(--text)}
 
-@media (max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.tools-grid{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:800px){.sidebar{width:60px;padding:16px 8px}.sidebar-logo span,.nav-item span,.user-info,.sidebar-section-label,.nav-badge{display:none}.nav-item{justify-content:center;padding:12px}.user-pill{justify-content:center}.main{padding:24px 20px}.two-col{grid-template-columns:1fr}.welcome-right{display:none}.page-title{font-size:24px}}
-@media (max-width:500px){.stats-grid{grid-template-columns:1fr}.tools-grid{grid-template-columns:1fr}}
+/* ── AUTH SCREEN ── */
+#auth-screen{flex-direction:row;background:var(--white)}
+
+.auth-left{
+  flex:1;background:var(--bg);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:56px;border-right:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.auth-left-brand{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.auth-left-brand span{color:var(--accent)}
+.auth-left-content{max-width:440px}
+.auth-eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.auth-headline{font-size:clamp(36px,3.5vw,56px);font-weight:800;line-height:1.1;letter-spacing:-.5px;color:var(--text);margin-bottom:20px}
+.auth-headline span{color:var(--accent)}
+.auth-subline{font-size:16px;color:var(--text2);line-height:1.7;max-width:380px}
+.auth-features{display:flex;flex-direction:column;gap:12px}
+.auth-feature{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2)}
+.auth-feature-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+.auth-right{
+  width:460px;flex-shrink:0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:64px 52px;
+}
+.auth-right h2{font-size:24px;font-weight:700;letter-spacing:-.3px;margin-bottom:6px}
+.auth-right-sub{font-size:14px;color:var(--text2);margin-bottom:28px}
+
+.auth-tabs{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:3px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text3);border-radius:6px;cursor:pointer;transition:var(--transition)}
+.auth-tab.active{background:var(--white);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
+
+.form-msg{font-size:13px;padding:10px 14px;border-radius:var(--radius);margin-bottom:14px;display:none;line-height:1.5}
+.form-msg.error{background:var(--red-l);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.form-msg.success{background:var(--green-l);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.form-msg.info{background:var(--accent-l);color:var(--accent);border:1px solid var(--accent-l2)}
+.form-msg.show{display:block}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.01em}
+.field input{
+  width:100%;padding:10px 14px;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:14px;
+  color:var(--text);outline:none;transition:var(--transition);
+}
+.field input::placeholder{color:var(--text3)}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
+.field-row{position:relative}
+.field-row input{padding-right:44px}
+.toggle-pw{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;display:flex;transition:var(--transition)}
+.toggle-pw:hover{color:var(--text2)}
+.forgot{float:right;font-size:12px;color:var(--accent);text-decoration:none;font-weight:500}
+.forgot:hover{text-decoration:underline}
+
+.btn-primary{
+  width:100%;padding:11px;background:var(--accent);color:#fff;
+  border:none;border-radius:var(--radius);font-family:var(--font);
+  font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition);
+  letter-spacing:.01em;
+}
+.btn-primary:hover{background:var(--accent-h);box-shadow:0 4px 12px rgba(92,75,255,.3)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text3);font-size:12px;letter-spacing:.04em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.btn-google{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:10px 20px;background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:500;
+  color:var(--text);cursor:pointer;transition:var(--transition);
+}
+.btn-google:hover{background:var(--bg);border-color:var(--border2)}
+.btn-google:disabled{opacity:.5;cursor:not-allowed}
+
+.auth-footer{margin-top:18px;text-align:center;font-size:12px;color:var(--text3)}
+.auth-footer a{color:var(--accent);text-decoration:none;font-weight:500}
+
+.confirm-box{text-align:center;padding:16px 0}
+.confirm-icon{font-size:40px;margin-bottom:16px}
+.confirm-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.confirm-sub{font-size:14px;color:var(--text2);line-height:1.6}
+.btn-ghost{margin-top:20px;background:none;border:1px solid var(--border);border-radius:var(--radius);padding:9px 20px;font-family:var(--font);font-size:13px;color:var(--text2);cursor:pointer;transition:var(--transition)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:7px;vertical-align:middle}
+.spinner-dark{border-color:rgba(0,0,0,.12);border-top-color:var(--text2)}
+
+/* ── APP LAYOUT ── */
+#app-screen{flex-direction:column;background:var(--bg)}
+.app-body{flex:1;display:grid;grid-template-columns:240px 1fr;min-height:0}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--white);border-right:1px solid var(--border);
+  padding:20px 12px;display:flex;flex-direction:column;gap:2px;
+}
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:0 10px;margin:16px 0 6px}
+.sidebar-label:first-child{margin-top:0}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:var(--radius);border:none;background:transparent;
+  font-family:var(--font);font-size:13px;font-weight:500;
+  color:var(--text2);cursor:pointer;transition:var(--transition);width:100%;text-align:left;
+}
+.nav-item svg{flex-shrink:0;opacity:.7}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--accent-l);color:var(--accent);font-weight:600}
+.nav-item.active svg{opacity:1}
+.nav-pill{margin-left:auto;font-size:10px;background:var(--bg);color:var(--text3);padding:2px 7px;border-radius:99px;border:1px solid var(--border)}
+
+.sidebar-spacer{flex:1}
+.credits-widget{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:14px;margin-top:8px;
+}
+.credits-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.credits-track{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.credits-fill{height:100%;background:var(--accent);border-radius:99px;transition:width 1s ease}
+.credits-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3)}
+.credits-meta b{color:var(--text);font-weight:600}
+
+/* ── CONTENT ── */
+.content{overflow-y:auto}
+.page{display:none;padding:40px 48px;animation:fadeUp .2s ease both}
+.page.active{display:block}
+.page-hd{margin-bottom:32px}
+.page-hd h1{font-size:28px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px}
+.page-hd p{font-size:14px;color:var(--text2)}
+
+/* ── STUDIO ── */
+.studio-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-head-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.card-head-badge{font-size:11px;color:var(--accent);font-weight:600;background:var(--accent-l);padding:3px 8px;border-radius:99px}
+.card-body{padding:20px 22px}
+
+textarea.main-input{
+  width:100%;min-height:200px;padding:16px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:15px;
+  color:var(--text);outline:none;resize:vertical;line-height:1.75;
+  transition:var(--transition);
+}
+textarea.main-input::placeholder{color:var(--text3)}
+textarea.main-input:focus{border-color:var(--accent);background:var(--white);box-shadow:0 0 0 3px var(--accent-l)}
+
+.meta-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:18px}
+.char-count{font-size:12px;color:var(--text3)}
+.char-count.warn{color:#d97706}
+
+.lang-row{display:flex;gap:6px;flex-wrap:wrap}
+.lang-tag{
+  padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;
+  background:var(--white);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;transition:var(--transition);
+}
+.lang-tag:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+.btn-gen{
+  width:100%;padding:13px;background:var(--accent);color:#fff;
+  border:none;border-radius:var(--radius);font-family:var(--font);
+  font-size:15px;font-weight:700;cursor:pointer;transition:var(--transition);
+  letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-gen:hover{background:var(--accent-h);box-shadow:0 4px 16px rgba(92,75,255,.25);transform:translateY(-1px)}
+.btn-gen:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+.audio-card{
+  margin-top:18px;background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;animation:fadeIn .3s ease;
+}
+.audio-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.audio-ready{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--green)}
+.audio-ready::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.btn-dl{
+  display:flex;align-items:center;gap:6px;padding:6px 14px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  font-family:var(--font);font-size:12px;font-weight:600;color:var(--text);
+  cursor:pointer;transition:var(--transition);
+}
+.btn-dl:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+audio{width:100%;height:36px}
+
+/* Voice selector */
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 12px;margin-bottom:12px;
+}
+.search-box svg{flex-shrink:0;color:var(--text3)}
+.search-box input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text);outline:none}
+.search-box input::placeholder{color:var(--text3)}
+
+.voice-list{display:flex;flex-direction:column;gap:2px;max-height:300px;overflow-y:auto}
+.voice-row{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:var(--radius);cursor:pointer;transition:var(--transition);
+  border:1px solid transparent;
+}
+.voice-row:hover{background:var(--bg)}
+.voice-row.selected{background:var(--accent-l);border-color:var(--accent-l2)}
+.voice-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.voice-name{font-size:13px;font-weight:500;color:var(--text)}
+.voice-lang{font-size:11px;color:var(--text3);margin-top:1px}
+.voice-check{margin-left:auto;color:var(--accent);flex-shrink:0}
+.btn-preview{
+  width:24px;height:24px;border-radius:50%;border:1px solid var(--border);
+  background:var(--white);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--transition);color:var(--text3);font-size:9px;flex-shrink:0;
+}
+.btn-preview:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Settings panel */
+.setting-row{margin-bottom:16px}
+.setting-row:last-child{margin-bottom:0}
+.setting-label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:7px}
+.setting-label b{color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.select-input{
+  width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:13px;color:var(--text);
+  outline:none;cursor:pointer;transition:var(--transition);
+}
+.select-input:focus{border-color:var(--accent)}
+
+/* ── VOICES PAGE ── */
+.voices-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.voices-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:9px 14px;width:280px;
+}
+.voices-search input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text);outline:none}
+.voices-search input::placeholder{color:var(--text3)}
+.voices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.voice-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:20px;cursor:pointer;transition:var(--transition);
+}
+.voice-card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.voice-card.selected-card{border-color:var(--accent);background:var(--accent-l)}
+.vc-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
+.vc-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.vc-meta{font-size:12px;color:var(--text3);margin-bottom:14px}
+.vc-actions{display:flex;gap:8px}
+.btn-xs{padding:6px 12px;border-radius:6px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);border:1px solid}
+.btn-xs-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-xs-primary:hover{background:var(--accent-h)}
+.btn-xs-ghost{background:transparent;color:var(--text2);border-color:var(--border)}
+.btn-xs-ghost:hover{background:var(--bg);color:var(--text)}
+
+/* ── HISTORY ── */
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-row{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px 20px;display:flex;align-items:center;gap:16px;transition:var(--transition);
+}
+.history-row:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.history-icon{width:38px;height:38px;border-radius:10px;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.history-info{flex:1;min-width:0}
+.history-text{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.history-meta{font-size:11px;color:var(--text3)}
+.history-acts{display:flex;gap:6px}
+.btn-icon{
+  width:30px;height:30px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--white);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--transition);color:var(--text3);
+}
+.btn-icon:hover{background:var(--bg);border-color:var(--border2);color:var(--text)}
+.history-empty{text-align:center;padding:80px 20px;color:var(--text3)}
+.history-empty-icon{font-size:36px;margin-bottom:12px;opacity:.4}
+.history-empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px}
+
+/* ── SETTINGS PAGE ── */
+.settings-block{margin-bottom:28px}
+.settings-block-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.settings-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-lbl{font-size:14px;font-weight:500;margin-bottom:2px}
+.settings-row-desc{font-size:12px;color:var(--text3)}
+.toggle{width:38px;height:21px;background:var(--border2);border-radius:99px;position:relative;cursor:pointer;border:none;transition:var(--transition);flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on{background:var(--accent)}
+.toggle.on::after{left:calc(100% - 18px)}
+.profile-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px}
+.profile-fields .field{margin:0}
+.profile-save{padding:0 20px 20px}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;display:none;align-items:center;gap:8px;animation:fadeUp .25s ease;max-width:340px;box-shadow:var(--shadow-md)}
+.toast.show{display:flex}
+.toast.success{background:#166534;color:#bbf7d0}
+.toast.error{background:#7f1d1d;color:#fecaca}
+
+.studio-msg{margin-bottom:16px}
+
+@media(max-width:900px){
+  .auth-left{display:none}
+  .auth-right{width:100%}
+  .studio-layout{grid-template-columns:1fr}
+  .app-body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .page{padding:24px 20px}
+}
 </style>
 </head>
 <body>
 
 <!-- LOADING -->
 <section id="loading-screen" class="screen active">
-  <div class="loading-logo"><span class="dot"></span>NexusAI</div>
-  <div class="loading-dots"><span></span><span></span><span></span></div>
-</section>
-
-<!-- SETUP -->
-<section id="setup-screen" class="screen">
-  <div class="setup-card">
-    <div class="setup-logo"><span class="dot"></span>NexusAI</div>
-    <div class="setup-title">Connect Supabase Auth</div>
-    <div class="setup-sub">Paste your project credentials once — saved locally. Real Google OAuth and email/password auth will be live instantly.</div>
-    <div class="step-badges">
-      <div class="step-badge"><span class="step-num">1</span>Create free project</div>
-      <div class="step-badge"><span class="step-num">2</span>Enable Google provider</div>
-      <div class="step-badge"><span class="step-num">3</span>Paste keys below</div>
-    </div>
-    <div class="info-box">
-      <strong>📋 Quick setup (5 minutes)</strong>
-      1. <a href="https://supabase.com" target="_blank">supabase.com</a> → New project (free tier)<br>
-      2. <strong>Settings → API</strong> → copy Project URL + anon public key<br>
-      3. <strong>Authentication → Providers → Google</strong> → enable + add OAuth credentials<br>
-      &nbsp;&nbsp;&nbsp;(Get credentials from <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>)<br>
-      4. <strong>Auth → URL Configuration</strong> → add your site URL to Redirect URLs
-    </div>
-    <div class="form-msg" id="setup-msg"></div>
-    <div class="field">
-      <label>Supabase Project URL</label>
-      <input type="url" id="sb-url" placeholder="https://abcdefghij.supabase.co">
-      <div class="field-hint">Settings → API → Project URL</div>
-    </div>
-    <div class="field">
-      <label>Supabase Anon Public Key</label>
-      <input type="text" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
-      <div class="field-hint">Settings → API → Project API keys → anon public</div>
-    </div>
-    <button class="btn-primary" onclick="saveConfig()">Save &amp; Connect →</button>
-    <div style="text-align:center;margin-top:16px">
-      <a href="#" style="font-size:12px;color:var(--muted);text-decoration:none" onclick="enterDemoMode(event)">Skip for now — use demo mode instead</a>
-    </div>
-  </div>
+  <div class="loading-wordmark">Voice<span>Lab</span></div>
+  <div class="loading-dots"><i></i><i></i><i></i></div>
 </section>
 
 <!-- AUTH -->
 <section id="auth-screen" class="screen">
-  <div class="auth-logo"><span class="dot"></span>NexusAI</div>
-  <div class="auth-card">
-    <div id="demo-badge-wrap" style="display:none"><span class="demo-badge">🧪 Demo Mode — no real auth</span></div>
-    <h1 class="auth-tagline">Your AI tools,<br><span>one platform.</span></h1>
-    <p class="auth-sub">Sign in to access ElevenLabs, HeyGen, and more in one unified workspace.</p>
+  <div class="auth-left">
+    <div class="auth-left-brand">Voice<span>Lab</span></div>
+    <div class="auth-left-content">
+      <div class="auth-eyebrow">AI Voice Studio</div>
+      <h1 class="auth-headline">Turn text into<br><span>human voice</span><br>in seconds.</h1>
+      <p class="auth-subline">Professional text-to-speech powered by ElevenLabs. 32 languages, 5,000+ voices, studio-quality audio.</p>
+    </div>
+    <div class="auth-features">
+      <div class="auth-feature"><span class="auth-feature-dot"></span>32 languages including Arabic, Hindi, English and more</div>
+      <div class="auth-feature"><span class="auth-feature-dot"></span>5,000+ natural AI voices to choose from</div>
+      <div class="auth-feature"><span class="auth-feature-dot"></span>Download studio-quality MP3 instantly</div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <h2>Welcome back</h2>
+    <p class="auth-right-sub">Sign in to your VoiceLab workspace</p>
+
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Sign in</button>
       <button class="auth-tab" onclick="switchTab('signup')">Create account</button>
     </div>
+
     <div class="form-msg" id="auth-msg"></div>
 
-    <!-- Google -->
-    <button class="btn-google" id="google-btn" onclick="signInWithGoogle()">
+    <button class="btn-google" id="google-btn" onclick="signInGoogle()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
       Continue with Google
     </button>
-    <div class="divider">or continue with email</div>
 
-    <!-- Login -->
+    <div class="divider">or</div>
+
     <div id="login-form">
       <div class="field">
         <label>Email address</label>
         <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
       </div>
       <div class="field">
-        <label>Password <a href="#" class="forgot-link" onclick="forgotPassword(event)">Forgot password?</a></label>
-        <div class="field-pw">
-          <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-          <button class="toggle-pw" onclick="togglePw('login-pw',this)" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <label>Password <a href="#" class="forgot" onclick="forgotPw(event)">Forgot password?</a></label>
+        <div class="field-row">
+          <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="toggle-pw" type="button" onclick="togglePw('login-pw',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
-      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in →</button>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign in</button>
     </div>
 
-    <!-- Signup -->
     <div id="signup-form" style="display:none">
       <div class="field">
         <label>Full name</label>
-        <input type="text" id="signup-name" placeholder="Alex Johnson" autocomplete="name">
+        <input type="text" id="signup-name" placeholder="Alex Johnson">
       </div>
       <div class="field">
         <label>Email address</label>
-        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email">
+        <input type="email" id="signup-email" placeholder="you@example.com">
       </div>
       <div class="field">
         <label>Password</label>
-        <div class="field-pw">
-          <input type="password" id="signup-pw" placeholder="Min. 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignup()">
-          <button class="toggle-pw" onclick="togglePw('signup-pw',this)" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <div class="field-row">
+          <input type="password" id="signup-pw" placeholder="Min. 8 characters" onkeydown="if(event.key==='Enter')doSignup()">
+          <button class="toggle-pw" type="button" onclick="togglePw('signup-pw',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
-      <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create account →</button>
+      <button class="btn-primary" id="signup-btn" onclick="doSignup()">Create account</button>
     </div>
 
-    <!-- Email confirm -->
-    <div id="confirm-view" style="display:none">
-      <div class="confirm-notice">
+    <div id="confirm-form" style="display:none">
+      <div class="confirm-box">
         <div class="confirm-icon">📬</div>
         <div class="confirm-title">Check your inbox</div>
         <div class="confirm-sub">We sent a confirmation link to <strong id="confirm-email"></strong>. Click it to activate your account.</div>
-        <button class="confirm-back" onclick="switchTab('login')">← Back to sign in</button>
+        <button class="btn-ghost" onclick="switchTab('login')">← Back to sign in</button>
       </div>
     </div>
 
-    <p class="auth-footer" id="auth-footer">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></p>
-    <div style="text-align:center;margin-top:10px">
-      <a href="#" style="font-size:11px;color:var(--mid);text-decoration:none" onclick="clearConfig(event)">⚙ Change Supabase config</a>
-    </div>
+    <p class="auth-footer">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></p>
   </div>
 </section>
 
-<!-- DASHBOARD -->
-<section id="dashboard-screen" class="screen">
-  <nav class="sidebar">
-    <div class="sidebar-logo"><span class="dot"></span><span>NexusAI</span></div>
-    <div class="sidebar-section-label">Menu</div>
-    <a class="nav-item active" onclick="showPage('home',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Overview</span>
-    </a>
-    <a class="nav-item" onclick="showPage('tools',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>AI Tools</span><span class="nav-badge">8</span>
-    </a>
-    <a class="nav-item" onclick="showPage('usage',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Usage</span>
-    </a>
-    <div class="sidebar-section-label">Account</div>
-    <a class="nav-item" onclick="showPage('settings',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Settings</span>
-    </a>
-    <div class="sidebar-bottom">
-      <div class="user-pill">
-        <div class="user-avatar" id="sb-avatar">A</div>
-        <div class="user-info"><div class="user-name" id="sb-name">User</div><div class="user-role" id="sb-role">Free Plan</div></div>
+<!-- APP -->
+<section id="app-screen" class="screen">
+  <nav class="topnav">
+    <div class="wordmark">Voice<span>Lab</span></div>
+    <div class="topnav-right">
+      <div class="user-chip">
+        <div class="user-av" id="nav-av">A</div>
+        <span class="user-chip-name" id="nav-name">User</span>
       </div>
-      <button id="logout-btn" onclick="doLogout()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Sign out</span>
-      </button>
+      <button class="btn-signout" onclick="doLogout()">Sign out</button>
     </div>
   </nav>
 
-  <main class="main">
-    <!-- HOME -->
-    <div class="page active" id="page-home">
-      <div class="welcome-banner">
-        <div class="welcome-left">
-          <div class="welcome-greeting">Good day, <span id="welcome-name">there</span> 👋</div>
-          <div class="welcome-sub">Here's what's happening in your workspace today.</div>
+  <div class="app-body">
+    <aside class="sidebar">
+      <div class="sidebar-label">Workspace</div>
+      <button class="nav-item active" onclick="showPage('studio',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Studio
+      </button>
+      <button class="nav-item" onclick="showPage('voices',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Voice Library
+        <span class="nav-pill" id="voice-count">—</span>
+      </button>
+      <button class="nav-item" onclick="showPage('history',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+        <span class="nav-pill" id="history-count">0</span>
+      </button>
+
+      <div class="sidebar-label">Account</div>
+      <button class="nav-item" onclick="showPage('settings',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </button>
+
+      <div class="sidebar-spacer"></div>
+      <div class="credits-widget">
+        <div class="credits-title">Monthly Credits</div>
+        <div class="credits-track"><div class="credits-fill" id="credits-fill" style="width:0%"></div></div>
+        <div class="credits-meta"><span id="credits-used">Loading…</span><b id="credits-total"></b></div>
+      </div>
+    </aside>
+
+    <div class="content">
+
+      <!-- STUDIO -->
+      <div class="page active" id="page-studio">
+        <div class="page-hd">
+          <h1>Studio</h1>
+          <p>Convert text to speech — supports all 32 languages</p>
         </div>
-        <div class="welcome-right">
-          <div class="welcome-stat"><div class="welcome-stat-val">12</div><div class="welcome-stat-lbl">Jobs Today</div></div>
-          <div class="welcome-stat"><div class="welcome-stat-val">3.4k</div><div class="welcome-stat-lbl">API Calls</div></div>
-          <div class="welcome-stat"><div class="welcome-stat-val">$4.20</div><div class="welcome-stat-lbl">Spent</div></div>
-        </div>
-      </div>
-      <div class="quick-actions">
-        <button class="qa-btn" onclick="showPage('tools',document.querySelectorAll('.nav-item')[1])">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Project
-        </button>
-        <button class="qa-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload File</button>
-        <button class="qa-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Documentation</button>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">Total Jobs</div><div class="stat-value">247</div><div class="stat-delta"><span class="up">↑ 18%</span> vs last month</div></div>
-        <div class="stat-card"><div class="stat-label">API Calls</div><div class="stat-value">84k</div><div class="stat-delta"><span class="up">↑ 31%</span> vs last month</div></div>
-        <div class="stat-card"><div class="stat-label">Credits Used</div><div class="stat-value">1,240</div><div class="stat-delta"><span class="down">↓ 4%</span> vs last month</div></div>
-        <div class="stat-card"><div class="stat-label">Saved</div><div class="stat-value">$128</div><div class="stat-delta"><span class="up">↑ 22%</span> vs direct pricing</div></div>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-head"><div class="card-title">Recent Activity</div><span class="badge badge-green">Live</span></div>
-          <div class="card-body" style="padding-top:8px">
-            <div class="activity-item"><div class="activity-dot" style="background:#3d7fff"></div><div><div class="activity-text"><strong>Voice cloned</strong> — "Product Demo v3" via ElevenLabs</div><div class="activity-time">2 minutes ago</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:#22c55e"></div><div><div class="activity-text"><strong>Avatar video created</strong> — "Q4 Update.mp4" via HeyGen</div><div class="activity-time">47 minutes ago</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--gold)"></div><div><div class="activity-text"><strong>Image batch generated</strong> — 24 assets</div><div class="activity-time">2 hours ago</div></div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--accent)"></div><div><div class="activity-text"><strong>Transcript created</strong> — "Meeting 2026-03-19.mp3"</div><div class="activity-time">Yesterday</div></div></div>
+        <div class="studio-layout">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-head-title">Your Text</div>
+                <span class="card-head-badge">32 languages supported</span>
+              </div>
+              <div class="card-body">
+                <textarea class="main-input" id="tts-text" placeholder="Type or paste your text here. Write in any language — English, Arabic, Hindi, Spanish, French, Japanese, and 26 more…" maxlength="5000" oninput="onTextInput()"></textarea>
+                <div class="meta-row">
+                  <span class="char-count" id="char-count">0 / 5,000</span>
+                  <div class="lang-row">
+                    <span class="lang-tag" onclick="setDemo('Hello, how are you today?')">🇺🇸 EN</span>
+                    <span class="lang-tag" onclick="setDemo('مرحباً، كيف حالك اليوم؟')">🇸🇦 AR</span>
+                    <span class="lang-tag" onclick="setDemo('नमस्ते, आप कैसे हैं?')">🇮🇳 HI</span>
+                    <span class="lang-tag" onclick="setDemo('Hola, ¿cómo estás hoy?')">🇪🇸 ES</span>
+                    <span class="lang-tag" onclick="setDemo('こんにちは、お元気ですか？')">🇯🇵 JA</span>
+                    <span class="lang-tag" onclick="setDemo('Bonjour, comment allez-vous?')">🇫🇷 FR</span>
+                  </div>
+                </div>
+
+                <div class="form-msg studio-msg" id="studio-msg"></div>
+
+                <div id="audio-card" style="display:none" class="audio-card">
+                  <div class="audio-card-top">
+                    <div class="audio-ready">Ready to play</div>
+                    <button class="btn-dl" onclick="dlAudio()">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      Download MP3
+                    </button>
+                  </div>
+                  <audio id="audio-player" controls></audio>
+                </div>
+
+                <button class="btn-gen" id="gen-btn" onclick="generateSpeech()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+                  Generate Speech
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-head-title">Voice</div>
+                <span id="sel-voice-label" style="font-size:12px;color:var(--accent);font-weight:600"></span>
+              </div>
+              <div class="card-body">
+                <div class="search-box">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" placeholder="Search voices…" id="voice-search" oninput="filterVoices()">
+                </div>
+                <div class="voice-list" id="voice-list">
+                  <div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Loading voices…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">Settings</div></div>
+              <div class="card-body">
+                <div class="setting-row">
+                  <div class="setting-label">Stability <b id="stab-val">50%</b></div>
+                  <input type="range" min="0" max="100" value="50" id="stability" oninput="document.getElementById('stab-val').textContent=this.value+'%'">
+                </div>
+                <div class="setting-row">
+                  <div class="setting-label">Similarity <b id="sim-val">75%</b></div>
+                  <input type="range" min="0" max="100" value="75" id="similarity" oninput="document.getElementById('sim-val').textContent=this.value+'%'">
+                </div>
+                <div class="setting-row">
+                  <div class="setting-label">Model</div>
+                  <select class="select-input" id="model">
+                    <option value="eleven_multilingual_v2">Multilingual v2 — Best quality</option>
+                    <option value="eleven_turbo_v2_5">Turbo v2.5 — Fast</option>
+                    <option value="eleven_flash_v2_5">Flash v2.5 — Ultra fast</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="plan-card">
-          <div class="plan-name">Current Plan</div>
-          <div class="plan-title">Free Tier</div>
-          <div class="plan-price">$0 / month · 1,000 credits included</div>
-          <ul class="plan-features">
-            <li>Access to 8 AI tools</li>
-            <li>1,000 free credits / mo</li>
-            <li>Standard API speed</li>
-            <li>Community support</li>
-          </ul>
-          <button class="btn-upgrade">Upgrade to Pro →</button>
+      </div>
+
+      <!-- VOICES -->
+      <div class="page" id="page-voices">
+        <div class="page-hd">
+          <h1>Voice Library</h1>
+          <p>Browse, preview and select from all available voices</p>
         </div>
-      </div>
-    </div>
-
-    <!-- TOOLS -->
-    <div class="page" id="page-tools">
-      <div class="page-header"><div class="page-title">AI Tools<span class="sub">All available integrations in your workspace</span></div></div>
-      <div class="tools-grid">
-        <div class="tool-card" style="--tool-color:#3d7fff" onclick="openModal('elevenlabs-modal')"><div class="tool-icon">🎙️</div><div class="tool-name">ElevenLabs</div><div class="tool-desc">Ultra-realistic voice cloning and speech synthesis in any style.</div><span class="tool-badge">Active</span></div>
-        <div class="tool-card" style="--tool-color:#22c55e" onclick="openModal('heygen-modal')"><div class="tool-icon">🎬</div><div class="tool-name">HeyGen</div><div class="tool-desc">AI avatar video creation — text to professional presenter videos.</div><span class="tool-badge">Active</span></div>
-        <div class="tool-card" style="--tool-color:var(--gold)"><div class="tool-icon">🖼️</div><div class="tool-name">Image Gen</div><div class="tool-desc">Photorealistic and artistic image generation at scale.</div><span class="tool-badge">Active</span></div>
-        <div class="tool-card" style="--tool-color:#a855f7"><div class="tool-icon">✍️</div><div class="tool-name">Copywriter AI</div><div class="tool-desc">Long-form content, ad copy, social posts — brand-voice aware.</div><span class="tool-badge">Active</span></div>
-        <div class="tool-card" style="--tool-color:#f43f5e"><div class="tool-icon">🎵</div><div class="tool-name">Music Gen</div><div class="tool-desc">Royalty-free background music, jingles, and soundscapes.</div><span class="tool-badge soon">Coming Soon</span></div>
-        <div class="tool-card" style="--tool-color:#06b6d4"><div class="tool-icon">📝</div><div class="tool-name">Transcription</div><div class="tool-desc">Audio/video to accurate text. 97 languages + speaker detection.</div><span class="tool-badge">Active</span></div>
-        <div class="tool-card" style="--tool-color:#f97316"><div class="tool-icon">🤖</div><div class="tool-name">Chat Assistant</div><div class="tool-desc">Custom AI assistants trained on your data. Embed anywhere.</div><span class="tool-badge soon">Coming Soon</span></div>
-        <div class="tool-card" style="--tool-color:#84cc16"><div class="tool-icon">🔍</div><div class="tool-name">AI Research</div><div class="tool-desc">Automated web research and comprehensive report generation.</div><span class="tool-badge soon">Coming Soon</span></div>
-      </div>
-    </div>
-
-    <!-- USAGE -->
-    <div class="page" id="page-usage">
-      <div class="page-header"><div class="page-title">Usage &amp; Credits<span class="sub">Your consumption this billing cycle</span></div></div>
-      <div class="stats-grid" style="margin-bottom:28px">
-        <div class="stat-card"><div class="stat-label">Credits Remaining</div><div class="stat-value">760</div><div class="stat-delta">of 1,000 total</div></div>
-        <div class="stat-card"><div class="stat-label">Cycle Resets</div><div class="stat-value">11d</div><div class="stat-delta">April 1, 2026</div></div>
-        <div class="stat-card"><div class="stat-label">Overage</div><div class="stat-value">$0</div><div class="stat-delta"><span class="up">Within limits</span></div></div>
-        <div class="stat-card"><div class="stat-label">Saved vs Direct</div><div class="stat-value">38%</div><div class="stat-delta"><span class="up">↑ vs paying directly</span></div></div>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-head"><div class="card-title">Credit Usage by Tool</div></div>
-          <div class="card-body">
-            <div class="usage-row"><div class="usage-label">ElevenLabs</div><div class="usage-bar"><div class="usage-fill" style="width:68%;background:#3d7fff"></div></div><div class="usage-pct">68%</div></div>
-            <div class="usage-row"><div class="usage-label">HeyGen</div><div class="usage-bar"><div class="usage-fill" style="width:45%;background:#22c55e"></div></div><div class="usage-pct">45%</div></div>
-            <div class="usage-row"><div class="usage-label">Image Gen</div><div class="usage-bar"><div class="usage-fill" style="width:30%;background:var(--gold)"></div></div><div class="usage-pct">30%</div></div>
-            <div class="usage-row"><div class="usage-label">Copywriter</div><div class="usage-bar"><div class="usage-fill" style="width:18%;background:#a855f7"></div></div><div class="usage-pct">18%</div></div>
-            <div class="usage-row"><div class="usage-label">Transcription</div><div class="usage-bar"><div class="usage-fill" style="width:10%;background:#06b6d4"></div></div><div class="usage-pct">10%</div></div>
+        <div class="voices-header">
+          <div class="voices-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search all voices…" id="lib-search" oninput="filterLibrary()">
           </div>
+          <span style="font-size:13px;color:var(--text3)" id="lib-count"></span>
         </div>
-        <div class="card">
-          <div class="card-head"><div class="card-title">Recent Transactions</div></div>
-          <div class="card-body" style="padding-top:8px">
-            <div class="activity-item"><div class="activity-dot" style="background:#3d7fff"></div><div style="flex:1"><div class="activity-text"><strong>ElevenLabs</strong> — Voice synthesis, 3min</div><div class="activity-time">2 hours ago</div></div><div style="font-size:13px;font-weight:600;color:var(--accent)">−24 cr</div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:#22c55e"></div><div style="flex:1"><div class="activity-text"><strong>HeyGen</strong> — Avatar video, 45sec</div><div class="activity-time">5 hours ago</div></div><div style="font-size:13px;font-weight:600;color:var(--accent)">−60 cr</div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:var(--gold)"></div><div style="flex:1"><div class="activity-text"><strong>Image Gen</strong> — 12 images, HD</div><div class="activity-time">Yesterday</div></div><div style="font-size:13px;font-weight:600;color:var(--accent)">−36 cr</div></div>
-            <div class="activity-item"><div class="activity-dot" style="background:#06b6d4"></div><div style="flex:1"><div class="activity-text"><strong>Top-up</strong> — 500 credits purchased</div><div class="activity-time">Mar 15</div></div><div style="font-size:13px;font-weight:600;color:#22c55e">+500 cr</div></div>
+        <div class="voices-grid" id="voices-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">Loading voices…</div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="page" id="page-history">
+        <div class="page-hd">
+          <h1>History</h1>
+          <p>Your recent voice generations this session</p>
+        </div>
+        <div id="history-list" class="history-list">
+          <div class="history-empty">
+            <div class="history-empty-icon">🎙️</div>
+            <div class="history-empty-title">No generations yet</div>
+            <div>Go to Studio and generate your first audio</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- SETTINGS -->
-    <div class="page" id="page-settings">
-      <div class="page-header"><div class="page-title">Settings<span class="sub">Manage your account and preferences</span></div></div>
-      <div class="settings-section">
-        <div class="settings-section-title">Profile</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:8px">
-          <div class="field" style="margin:0"><label>Full Name</label><input type="text" id="set-name"></div>
-          <div class="field" style="margin:0"><label>Email Address</label><input type="email" id="set-email" readonly style="opacity:.6;cursor:not-allowed"></div>
-          <div class="field" style="margin:0;grid-column:span 2"><label>Company / Brand</label><input type="text" placeholder="Optional"></div>
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="page-hd">
+          <h1>Settings</h1>
+          <p>Manage your account and preferences</p>
         </div>
-        <button class="btn-primary" style="max-width:160px;margin-top:4px" onclick="saveProfile()">Save Changes</button>
-        <div class="form-msg" id="profile-msg" style="margin-top:12px;max-width:380px"></div>
+        <div class="settings-block">
+          <div class="settings-block-title">Profile</div>
+          <div class="settings-card">
+            <div class="profile-fields">
+              <div class="field"><label>Full Name</label><input type="text" id="set-name"></div>
+              <div class="field"><label>Email</label><input type="email" id="set-email" disabled style="opacity:.5;cursor:not-allowed"></div>
+            </div>
+            <div class="profile-save">
+              <button class="btn-primary" style="max-width:140px" onclick="saveProfile()">Save changes</button>
+              <div class="form-msg" id="profile-msg" style="margin-top:10px;max-width:400px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-title">Notifications</div>
+          <div class="settings-card">
+            <div class="settings-row"><div><div class="settings-row-lbl">Generation alerts</div><div class="settings-row-desc">Notify when audio is ready</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="settings-row"><div><div class="settings-row-lbl">Credit warnings</div><div class="settings-row-desc">Alert when credits fall below 20%</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="settings-row"><div><div class="settings-row-lbl">Product updates</div><div class="settings-row-desc">New features and improvements</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+          </div>
+        </div>
+        <div class="settings-block">
+          <div class="settings-block-title">Security</div>
+          <div class="settings-card">
+            <div class="settings-row" style="cursor:pointer" onclick="sendPwReset()">
+              <div><div class="settings-row-lbl">Change password</div><div class="settings-row-desc">Send a reset link to your email</div></div>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="settings-section">
-        <div class="settings-section-title">Notifications</div>
-        <div class="settings-row"><div><div class="settings-row-label">Job Completion Alerts</div><div class="settings-row-desc">Get notified when your AI jobs finish</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Credit Low Warning</div><div class="settings-row-desc">Alert when credits fall below 100</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
-        <div class="settings-row"><div><div class="settings-row-label">Product Updates</div><div class="settings-row-desc">New tools and feature announcements</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">Security</div>
-        <div class="settings-row"><div><div class="settings-row-label">Two-Factor Authentication</div><div class="settings-row-desc">Add an extra layer of security</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
-        <div class="settings-row" style="cursor:pointer" onclick="sendPwReset()"><div><div class="settings-row-label">Change Password</div><div class="settings-row-desc">Send a password reset link to your email</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--mid)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">Danger Zone</div>
-        <div class="settings-row" style="border-color:#fecaca"><div><div class="settings-row-label" style="color:#c93a1a">Delete Account</div><div class="settings-row-desc">Permanently delete your account and all data</div></div><button style="background:#fef2ef;border:1px solid #fecaca;color:#c93a1a;font-family:var(--font-body);font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer">Delete</button></div>
-      </div>
+
     </div>
-  </main>
+  </div>
 </section>
 
-<!-- ══ ELEVENLABS MODAL ══ -->
-<div class="modal-overlay" id="elevenlabs-modal" onclick="handleOverlayClick(event,'elevenlabs-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">
-        <div class="micon" style="background:#eff4ff">🎙️</div>
-        ElevenLabs — Text to Speech
-      </div>
-      <button class="modal-close" onclick="closeModal('elevenlabs-modal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('el','tts')">Text to Speech</button>
-        <button class="modal-tab" onclick="switchModalTab('el','voices')">My Voices</button>
-      </div>
-
-      <!-- TTS TAB -->
-      <div class="modal-tab-panel active" id="el-tab-tts">
-        <div class="m-field">
-          <label>Your Text</label>
-          <textarea id="el-text" placeholder="Type or paste the text you want to convert to speech..." oninput="updateCharCount()" maxlength="5000"></textarea>
-          <div class="char-count" id="el-char-count">0 / 5000</div>
-        </div>
-
-        <div class="m-field">
-          <label>Select Voice</label>
-          <div id="el-voice-list" class="voice-grid">
-            <div class="loading-voices">Loading voices…</div>
-          </div>
-        </div>
-
-        <div class="m-field" style="margin-bottom:8px">
-          <label>Voice Settings</label>
-          <div class="slider-row">
-            <label>Stability</label>
-            <input type="range" id="el-stability" min="0" max="100" value="50" oninput="document.getElementById('el-stab-val').textContent=this.value+'%'">
-            <span id="el-stab-val">50%</span>
-          </div>
-          <div class="slider-row">
-            <label>Similarity</label>
-            <input type="range" id="el-similarity" min="0" max="100" value="75" oninput="document.getElementById('el-sim-val').textContent=this.value+'%'">
-            <span id="el-sim-val">75%</span>
-          </div>
-        </div>
-
-        <div class="m-field">
-          <label>Model</label>
-          <select id="el-model">
-            <option value="eleven_multilingual_v2">Multilingual v2 — Best quality</option>
-            <option value="eleven_turbo_v2_5">Turbo v2.5 — Fast + multilingual</option>
-            <option value="eleven_flash_v2_5">Flash v2.5 — Ultra low latency</option>
-          </select>
-        </div>
-
-        <div class="form-msg" id="el-msg"></div>
-
-        <div id="el-audio-result" style="display:none">
-          <div class="audio-result">
-            <audio id="el-audio-player" controls></audio>
-            <button class="audio-dl" onclick="downloadAudio()">⬇ Download</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- VOICES TAB -->
-      <div class="modal-tab-panel" id="el-tab-voices">
-        <div id="el-voices-full" class="voice-grid" style="grid-template-columns:repeat(2,1fr)">
-          <div class="loading-voices" style="grid-column:span 2">Loading your voices…</div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('elevenlabs-modal')">Cancel</button>
-      <button class="btn-generate" id="el-generate-btn" onclick="generateSpeech()">
-        🎙️ Generate Speech
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HEYGEN MODAL ══ -->
-<div class="modal-overlay" id="heygen-modal" onclick="handleOverlayClick(event,'heygen-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">
-        <div class="micon" style="background:#eefaf3">🎬</div>
-        HeyGen — Avatar Video
-      </div>
-      <button class="modal-close" onclick="closeModal('heygen-modal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('hg','create')">Create Video</button>
-        <button class="modal-tab" onclick="switchModalTab('hg','status')">My Videos</button>
-      </div>
-
-      <!-- CREATE TAB -->
-      <div class="modal-tab-panel active" id="hg-tab-create">
-        <div class="m-field">
-          <label>Script / Text</label>
-          <textarea id="hg-script" placeholder="Write the script for your avatar to speak..." maxlength="5000" oninput="updateHgCharCount()"></textarea>
-          <div class="char-count" id="hg-char-count">0 / 5000</div>
-        </div>
-
-        <div class="m-field">
-          <label>Choose Avatar</label>
-          <div id="hg-avatar-list" class="avatar-grid">
-            <div class="loading-voices" style="grid-column:span 3">Loading avatars…</div>
-          </div>
-        </div>
-
-        <div class="m-field">
-          <label>Avatar Voice</label>
-          <div id="hg-voice-list" class="voice-grid">
-            <div class="loading-voices">Loading voices…</div>
-          </div>
-        </div>
-
-        <div class="m-field">
-          <label>Video Ratio</label>
-          <select id="hg-ratio">
-            <option value="16:9">16:9 — Landscape (YouTube, TV)</option>
-            <option value="9:16">9:16 — Portrait (Reels, TikTok)</option>
-            <option value="1:1">1:1 — Square (Instagram)</option>
-          </select>
-        </div>
-
-        <div class="form-msg" id="hg-msg"></div>
-
-        <div id="hg-video-result" style="display:none">
-          <div class="video-status" id="hg-status-box">
-            <div class="video-status-icon" id="hg-status-icon">⏳</div>
-            <div class="video-status-title" id="hg-status-title">Generating your video…</div>
-            <div class="video-status-sub" id="hg-status-sub">This usually takes 1–3 minutes. You can close this and check "My Videos" later.</div>
-            <div class="progress-bar"><div class="progress-fill" id="hg-progress" style="width:15%"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MY VIDEOS TAB -->
-      <div class="modal-tab-panel" id="hg-tab-status">
-        <div id="hg-videos-list">
-          <div class="loading-voices">Enter a video ID below to check status</div>
-        </div>
-        <div class="m-field" style="margin-top:16px">
-          <label>Check Video Status by ID</label>
-          <input type="text" id="hg-video-id-input" placeholder="Paste your video_id here">
-        </div>
-        <button class="btn-generate" onclick="checkVideoStatus()">Check Status</button>
-        <div class="form-msg" id="hg-status-msg" style="margin-top:12px"></div>
-        <div id="hg-status-result" style="margin-top:12px"></div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('heygen-modal')">Cancel</button>
-      <button class="btn-generate" id="hg-generate-btn" onclick="generateVideo()" style="background:linear-gradient(135deg,#22c55e,#16a34a)">
-        🎬 Generate Video
-      </button>
-    </div>
-  </div>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────
-// API KEYS
-// ─────────────────────────────────────────
-const EL_KEY = 'sk_1fd6c6d350e075a8428097c5ce0086feb99c69707c84b114';
-const HG_KEY = 'sk_V2_hgu_kgKCnHVbkqD_Sh3p814PF1NVSuZ60loKEIdoNFm1y9me';
+// ── CONFIG ──────────────────────────────────────
+const SB_URL  = 'https://ekgqeuctrlnjicdopbbk.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ3FldWN0cmxuamljZG9wYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTIzNTksImV4cCI6MjA4OTcyODM1OX0.QaLXp4Rrt7Rme_KvdmbS7dMPpJtx6X_oG8S2chZlxjE';
+const EL_KEY  = 'sk_1fd6c6d350e075a8428097c5ce0086feb99c69707c84b114';
+const REDIR   = 'https://shaang42.github.io/nexusai/';
 
-// ─────────────────────────────────────────
-// MODAL HELPERS
-// ─────────────────────────────────────────
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  document.body.style.overflow = 'hidden';
-  if (id === 'elevenlabs-modal') loadELVoices();
-  if (id === 'heygen-modal') { loadHGAvatars(); loadHGVoices(); }
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  document.body.style.overflow = '';
-}
-function handleOverlayClick(e, id) {
-  if (e.target === document.getElementById(id)) closeModal(id);
-}
-function switchModalTab(prefix, tab) {
-  const modal = prefix === 'el' ? 'elevenlabs-modal' : 'heygen-modal';
-  const tabs = prefix === 'el' ? ['tts','voices'] : ['create','status'];
-  document.querySelectorAll(`#${modal} .modal-tab`).forEach((t,i) => t.classList.toggle('active', tabs[i] === tab));
-  document.querySelectorAll(`#${modal} .modal-tab-panel`).forEach(p => p.classList.remove('active'));
-  document.getElementById(`${prefix}-tab-${tab}`).classList.add('active');
+// ── STATE ───────────────────────────────────────
+let sb, user, voices=[], selId=null, selName=null, audioBlob=null, genHistory=[];
+const PALETTE = ['#5c4bff','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#db2777'];
+
+// ── BOOT ────────────────────────────────────────
+async function boot() {
+  sb = window.supabase.createClient(SB_URL, SB_KEY);
+  if (location.hash.includes('access_token')) {
+    const { data } = await sb.auth.getSession();
+    if (data?.session) { history.replaceState(null,'',location.pathname); enterApp(data.session.user); return; }
+  }
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) { enterApp(session.user); return; }
+  sb.auth.onAuthStateChange((_e,s) => { if(s) enterApp(s.user); else show('auth-screen'); });
+  show('auth-screen');
 }
 
-// ─────────────────────────────────────────
-// ELEVENLABS
-// ─────────────────────────────────────────
-let elVoices = [], elSelectedVoice = null, elAudioBlob = null;
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
-async function loadELVoices() {
-  const c1 = document.getElementById('el-voice-list');
-  const c2 = document.getElementById('el-voices-full');
-  if (elVoices.length) { renderVoiceGrid(c1, elVoices.slice(0,6)); renderVoiceGrid(c2, elVoices); return; }
-  c1.innerHTML = '<div class="loading-voices">Loading voices…</div>';
+// ── ENTER APP ───────────────────────────────────
+function enterApp(u) {
+  user = u;
+  const meta = u.user_metadata||{};
+  const name = meta.full_name||meta.name||u.email?.split('@')[0]||'User';
+  const first = name.split(' ')[0];
+  const pic = meta.avatar_url||'';
+  document.getElementById('nav-name').textContent = first;
+  document.getElementById('set-name').value = name;
+  document.getElementById('set-email').value = u.email||'';
+  const av = document.getElementById('nav-av');
+  av.innerHTML = pic ? `<img src="${pic}" alt="${first}">` : first[0].toUpperCase();
+  show('app-screen');
+  loadVoices();
+  loadCredits();
+}
 
-  // Try direct API call first — ElevenLabs voices endpoint supports CORS
+// ── VOICES ──────────────────────────────────────
+const DEFAULT_VOICES = [
+  {voice_id:'21m00Tcm4TlvDq8ikWAM',name:'Rachel',  labels:{accent:'American',gender:'Female'}},
+  {voice_id:'AZnzlk1XvdvUeBnXmlld',name:'Domi',    labels:{accent:'American',gender:'Female'}},
+  {voice_id:'EXAVITQu4vr4xnSDxMaL',name:'Bella',   labels:{accent:'American',gender:'Female'}},
+  {voice_id:'ErXwobaYiN019PkySvjV', name:'Antoni',  labels:{accent:'American',gender:'Male'}},
+  {voice_id:'MF3mGyEYCl7XYWbV9V6O', name:'Elli',    labels:{accent:'American',gender:'Female'}},
+  {voice_id:'TxGEqnHWrfWFTfGW9XjX', name:'Josh',    labels:{accent:'American',gender:'Male'}},
+  {voice_id:'VR6AewLTigWG4xSOukaG', name:'Arnold',  labels:{accent:'American',gender:'Male'}},
+  {voice_id:'pNInz6obpgDQGcFmaJgB', name:'Adam',    labels:{accent:'American',gender:'Male'}},
+  {voice_id:'yoZ06aMxZJJ28mfd3POQ', name:'Sam',     labels:{accent:'American',gender:'Male'}},
+  {voice_id:'onwK4e9ZLuTAKqWW03F9', name:'Daniel',  labels:{accent:'British', gender:'Male'}},
+  {voice_id:'flq6f7yk4E4fJM5XTYuZ', name:'Michael', labels:{accent:'American',gender:'Male'}},
+  {voice_id:'g5CIjZEefAph4nQFvHAz', name:'Ethan',   labels:{accent:'American',gender:'Male'}},
+];
+
+async function loadVoices() {
   try {
-    const res = await fetch('https://api.elevenlabs.io/v1/voices', {
-      headers: { 'xi-api-key': EL_KEY }
-    });
+    const res = await fetch('https://api.elevenlabs.io/v1/voices',{headers:{'xi-api-key':EL_KEY}});
     if (res.ok) {
-      const data = await res.json();
-      if (data.voices && data.voices.length > 0) {
-        elVoices = data.voices;
-        renderVoiceGrid(c1, elVoices.slice(0,6));
-        renderVoiceGrid(c2, elVoices);
-        return;
-      }
-    }
-  } catch(e) { /* fall through */ }
-
-  // Fall back to hardcoded ElevenLabs default voices
-  elVoices = [
-    { voice_id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel',  labels: { accent: 'American' } },
-    { voice_id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi',    labels: { accent: 'American' } },
-    { voice_id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella',   labels: { accent: 'American' } },
-    { voice_id: 'ErXwobaYiN019PkySvjV', name: 'Antoni',  labels: { accent: 'American' } },
-    { voice_id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli',    labels: { accent: 'American' } },
-    { voice_id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh',    labels: { accent: 'American' } },
-    { voice_id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold',  labels: { accent: 'American' } },
-    { voice_id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam',    labels: { accent: 'American' } },
-    { voice_id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam',     labels: { accent: 'American' } },
-    { voice_id: 'onwK4e9ZLuTAKqWW03F9', name: 'Daniel',  labels: { accent: 'British'  } },
-    { voice_id: 'flq6f7yk4E4fJM5XTYuZ', name: 'Michael', labels: { accent: 'American' } },
-    { voice_id: 'g5CIjZEefAph4nQFvHAz', name: 'Ethan',   labels: { accent: 'American' } },
-  ];
-  renderVoiceGrid(c1, elVoices.slice(0,6));
-  renderVoiceGrid(c2, elVoices);
+      const d = await res.json();
+      if (d.voices?.length) { voices = d.voices; }
+      else voices = DEFAULT_VOICES;
+    } else voices = DEFAULT_VOICES;
+  } catch { voices = DEFAULT_VOICES; }
+  document.getElementById('voice-count').textContent = voices.length;
+  document.getElementById('lib-count').textContent = `${voices.length} voices`;
+  renderVoiceList(voices);
+  renderLibrary(voices);
+  // Auto-select first
+  if (voices.length && !selId) selectVoice(voices[0].voice_id, voices[0].name);
 }
 
-function renderVoiceGrid(container, voices) {
-  if (!voices.length) { container.innerHTML='<div class="loading-voices">No voices found.</div>'; return; }
-  container.innerHTML = voices.map(v=>`
-    <div class="voice-card ${elSelectedVoice===v.voice_id?'selected':''}" onclick="selectVoice('${v.voice_id}','${v.name.replace(/'/g,'')}')">
-      <div class="voice-avatar">${v.name[0]}</div>
-      <div class="voice-info"><div class="voice-name">${v.name}</div><div class="voice-meta">${v.labels?.accent||v.category||'AI Voice'}</div></div>
-      ${v.preview_url?`<button onclick="previewVoice(event,'${v.preview_url}')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--accent2);font-size:16px;flex-shrink:0">▶</button>`:''}
+function color(name) { return PALETTE[name.charCodeAt(0)%PALETTE.length]; }
+
+function renderVoiceList(list) {
+  const el = document.getElementById('voice-list');
+  if (!list.length) { el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">No voices found</div>'; return; }
+  el.innerHTML = list.map(v=>`
+    <div class="voice-row ${selId===v.voice_id?'selected':''}" onclick="selectVoice('${v.voice_id}','${v.name.replace(/'/g,'')}')">
+      <div class="voice-av" style="background:${color(v.name)}">${v.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="voice-name">${v.name}</div>
+        <div class="voice-lang">${v.labels?.accent||v.labels?.language||'English'} · ${v.labels?.gender||''}</div>
+      </div>
+      ${v.preview_url?`<button class="btn-preview" onclick="playPreview(event,'${v.preview_url}')">▶</button>`:''}
+      ${selId===v.voice_id?'<svg class="voice-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}
+    </div>`).join('');
+}
+
+function renderLibrary(list) {
+  const el = document.getElementById('voices-grid');
+  if (!list.length) { el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">No voices found</div>'; return; }
+  el.innerHTML = list.map(v=>`
+    <div class="voice-card ${selId===v.voice_id?'selected-card':''}" onclick="selectVoice('${v.voice_id}','${v.name.replace(/'/g,'')}');showPage('studio',document.querySelector('.nav-item'))">
+      <div class="vc-av" style="background:${color(v.name)}">${v.name[0]}</div>
+      <div class="vc-name">${v.name}</div>
+      <div class="vc-meta">${v.labels?.accent||'English'} · ${v.labels?.gender||'AI Voice'}</div>
+      <div class="vc-actions">
+        <button class="btn-xs btn-xs-primary" onclick="event.stopPropagation();selectVoice('${v.voice_id}','${v.name.replace(/'/g,'')}');showPage('studio',document.querySelector('.nav-item'))">Use voice</button>
+        ${v.preview_url?`<button class="btn-xs btn-xs-ghost" onclick="event.stopPropagation();playPreview(event,'${v.preview_url}')">Preview</button>`:''}
+      </div>
     </div>`).join('');
 }
 
 function selectVoice(id, name) {
-  elSelectedVoice = id;
-  document.querySelectorAll('#el-voice-list .voice-card,#el-voices-full .voice-card').forEach(c=>{
-    c.classList.toggle('selected', c.querySelector('.voice-name')?.textContent===name);
-  });
+  selId=id; selName=name;
+  document.getElementById('sel-voice-label').textContent = name;
+  renderVoiceList(currentVoiceFilter());
+  renderLibrary(currentVoiceFilter());
 }
 
-function previewVoice(e, url) { e.stopPropagation(); new Audio(url).play(); }
-function updateCharCount() {
-  const t = document.getElementById('el-text').value;
-  document.getElementById('el-char-count').textContent=`${t.length} / 5000`;
+function currentVoiceFilter() {
+  const q = document.getElementById('voice-search')?.value?.toLowerCase()||'';
+  return q ? voices.filter(v=>v.name.toLowerCase().includes(q)) : voices;
 }
 
-async function generateSpeech() {
-  const text = document.getElementById('el-text').value.trim();
-  if (!text) { setElMsg('Please enter some text first.','error'); return; }
-  if (!elSelectedVoice) { setElMsg('Please select a voice first.','error'); return; }
-  const btn = document.getElementById('el-generate-btn');
-  btn.disabled=true; btn.innerHTML=`<span class="spinner"></span> Generating…`;
-  setElMsg('','');
+function filterVoices() { renderVoiceList(currentVoiceFilter()); }
+function filterLibrary() {
+  const q = document.getElementById('lib-search').value.toLowerCase();
+  const filtered = q ? voices.filter(v=>v.name.toLowerCase().includes(q)||v.labels?.accent?.toLowerCase().includes(q)) : voices;
+  document.getElementById('lib-count').textContent = `${filtered.length} voices`;
+  renderLibrary(filtered);
+}
+
+function playPreview(e, url) { e.stopPropagation(); new Audio(url).play(); }
+
+// ── CREDITS ─────────────────────────────────────
+async function loadCredits() {
   try {
-    // ElevenLabs TTS supports direct browser calls with xi-api-key header
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elSelectedVoice}`, {
+    const res = await fetch('https://api.elevenlabs.io/v1/user',{headers:{'xi-api-key':EL_KEY}});
+    if (res.ok) {
+      const d = await res.json();
+      const used = d.subscription?.character_count||0;
+      const total = d.subscription?.character_limit||10000;
+      const pct = Math.min((used/total)*100,100);
+      document.getElementById('credits-fill').style.width = pct+'%';
+      document.getElementById('credits-used').textContent = used.toLocaleString()+' used';
+      document.getElementById('credits-total').textContent = total.toLocaleString();
+    }
+  } catch {
+    document.getElementById('credits-used').textContent = 'Unavailable';
+    document.getElementById('credits-total').textContent = '';
+  }
+}
+
+// ── GENERATE SPEECH ─────────────────────────────
+async function generateSpeech() {
+  const text = document.getElementById('tts-text').value.trim();
+  if (!text) { setStudioMsg('Please enter some text first.','error'); return; }
+  if (!selId) { setStudioMsg('Please select a voice first.','error'); return; }
+  const btn = document.getElementById('gen-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Generating…';
+  setStudioMsg('','');
+  document.getElementById('audio-card').style.display='none';
+  try {
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${selId}`,{
       method:'POST',
-      headers:{
-        'xi-api-key': EL_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
-      },
+      headers:{'xi-api-key':EL_KEY,'Content-Type':'application/json','Accept':'audio/mpeg'},
       body:JSON.stringify({
         text,
-        model_id: document.getElementById('el-model').value,
+        model_id: document.getElementById('model').value,
         voice_settings:{
-          stability: document.getElementById('el-stability').value/100,
-          similarity_boost: document.getElementById('el-similarity').value/100
+          stability: document.getElementById('stability').value/100,
+          similarity_boost: document.getElementById('similarity').value/100
         }
       })
     });
     if (!res.ok) {
-      const errData = await res.json().catch(()=>({}));
-      const errMsg = errData?.detail?.message || errData?.detail || errData?.message || JSON.stringify(errData) || 'Generation failed';
-      throw new Error(errMsg);
+      const err = await res.json().catch(()=>({}));
+      const msg = err?.detail?.message||err?.detail||err?.message||JSON.stringify(err)||'Generation failed';
+      throw new Error(msg);
     }
-    elAudioBlob = await res.blob();
-    const url = URL.createObjectURL(elAudioBlob);
-    document.getElementById('el-audio-player').src = url;
-    document.getElementById('el-audio-result').style.display='block';
-    document.getElementById('el-audio-player').play();
-    setElMsg('✅ Audio generated successfully!','success');
+    audioBlob = await res.blob();
+    const url = URL.createObjectURL(audioBlob);
+    document.getElementById('audio-player').src = url;
+    document.getElementById('audio-card').style.display='block';
+    document.getElementById('audio-player').play();
+    setStudioMsg('','');
+    addHistory(text, selName);
+    loadCredits();
+    showToast('Audio generated successfully!','success');
   } catch(e) {
-    const msg = typeof e.message === 'object' ? JSON.stringify(e.message) : e.message;
-    setElMsg(`Error: ${msg}`,'error');
+    const msg = typeof e.message==='object' ? JSON.stringify(e.message) : e.message;
+    setStudioMsg(msg,'error');
   }
-  btn.disabled=false; btn.innerHTML='🎙️ Generate Speech';
+  btn.disabled=false;
+  btn.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg> Generate Speech';
 }
 
-function downloadAudio() {
-  if (!elAudioBlob) return;
-  const a=document.createElement('a'); a.href=URL.createObjectURL(elAudioBlob);
-  a.download=`nexusai-speech-${Date.now()}.mp3`; a.click();
-}
-function setElMsg(text,type) {
-  const el=document.getElementById('el-msg'); el.textContent=text;
-  el.className=type?`form-msg ${type} show`:'form-msg';
+function dlAudio() {
+  if (!audioBlob) return;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(audioBlob);
+  a.download=`voicelab-${Date.now()}.mp3`; a.click();
 }
 
-// ─────────────────────────────────────────
-// HEYGEN
-// ─────────────────────────────────────────
-let hgAvatars=[], hgVoices=[], hgSelectedAvatar=null, hgSelectedVoice=null, hgPollInterval=null;
-
-async function loadHGAvatars() {
-  const c = document.getElementById('hg-avatar-list');
-  if (hgAvatars.length) return;
-  try {
-    const res = await fetch('/.netlify/functions/heygen?path=avatars&version=v2');
-    const data = await res.json();
-    hgAvatars = data.data?.avatars||[];
-    if (!hgAvatars.length) { c.innerHTML='<div class="loading-voices" style="grid-column:span 3">No avatars on your account yet.</div>'; return; }
-    c.innerHTML = hgAvatars.slice(0,9).map(a=>`
-      <div class="avatar-card" onclick="selectAvatar('${a.avatar_id}','${(a.avatar_name||'Avatar').replace(/'/g,'')}')">
-        <div class="avatar-thumb">${a.preview_image_url?`<img src="${a.preview_image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.textContent='🧑'">`:'🧑'}</div>
-        <div class="avatar-card-name">${a.avatar_name||'Avatar'}</div>
-      </div>`).join('');
-  } catch(e) { c.innerHTML=`<div class="loading-voices" style="grid-column:span 3;color:#c93a1a">Failed to load avatars.</div>`; }
+// ── HISTORY ─────────────────────────────────────
+function addHistory(text, voice) {
+  genHistory.unshift({text,voice,time:new Date()});
+  document.getElementById('history-count').textContent = genHistory.length;
+  const el = document.getElementById('history-list');
+  el.innerHTML = genHistory.map((h,i)=>`
+    <div class="history-row">
+      <div class="history-icon">🎙️</div>
+      <div class="history-info">
+        <div class="history-text">${h.text}</div>
+        <div class="history-meta">${h.voice} · ${h.time.toLocaleTimeString()}</div>
+      </div>
+    </div>`).join('');
 }
 
-async function loadHGVoices() {
-  const c = document.getElementById('hg-voice-list');
-  if (hgVoices.length) return;
-  try {
-    const res = await fetch('/.netlify/functions/heygen?path=voices&version=v2');
-    const data = await res.json();
-    hgVoices = data.data?.voices||[];
-    const show = (hgVoices.filter(v=>v.language==='English'||v.language?.startsWith('en')).slice(0,6)||hgVoices.slice(0,6));
-    c.innerHTML = show.map(v=>`
-      <div class="voice-card" onclick="selectHGVoice('${v.voice_id}','${(v.display_name||v.name||'Voice').replace(/'/g,'')}')">
-        <div class="voice-avatar" style="background:linear-gradient(135deg,#22c55e,#16a34a)">${(v.display_name||v.name||'V')[0]}</div>
-        <div class="voice-info"><div class="voice-name">${v.display_name||v.name||'Voice'}</div><div class="voice-meta">${v.language||'English'} · ${v.gender||'Neutral'}</div></div>
-      </div>`).join('');
-  } catch(e) { c.innerHTML=`<div class="loading-voices" style="color:#c93a1a">Failed to load voices.</div>`; }
+// ── UI HELPERS ───────────────────────────────────
+function onTextInput() {
+  const t = document.getElementById('tts-text').value;
+  const el = document.getElementById('char-count');
+  el.textContent = `${t.length.toLocaleString()} / 5,000`;
+  el.className = 'char-count' + (t.length>4500?' warn':'');
 }
-
-function selectAvatar(id,name) {
-  hgSelectedAvatar=id;
-  document.querySelectorAll('#hg-avatar-list .avatar-card').forEach(c=>c.classList.toggle('selected',c.querySelector('.avatar-card-name')?.textContent===name));
+function setDemo(txt) {
+  document.getElementById('tts-text').value = txt;
+  onTextInput();
 }
-function selectHGVoice(id,name) {
-  hgSelectedVoice=id;
-  document.querySelectorAll('#hg-voice-list .voice-card').forEach(c=>c.classList.toggle('selected',c.querySelector('.voice-name')?.textContent===name));
+function setStudioMsg(text,type) {
+  const el=document.getElementById('studio-msg');
+  el.textContent=text; el.className='form-msg studio-msg'+(type?' '+type+' show':'');
 }
-function updateHgCharCount() {
-  const t=document.getElementById('hg-script').value;
-  document.getElementById('hg-char-count').textContent=`${t.length} / 5000`;
+function showToast(msg,type) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  setTimeout(()=>el.classList.remove('show'),3000);
 }
-
-async function generateVideo() {
-  const script=document.getElementById('hg-script').value.trim();
-  if (!script) { setHgMsg('Please enter a script.','error'); return; }
-  if (!hgSelectedAvatar) { setHgMsg('Please select an avatar.','error'); return; }
-  if (!hgSelectedVoice) { setHgMsg('Please select a voice.','error'); return; }
-  const btn=document.getElementById('hg-generate-btn');
-  btn.disabled=true; btn.innerHTML=`<span class="spinner"></span> Submitting…`;
-  setHgMsg('','');
-  const ratio=document.getElementById('hg-ratio').value;
-  const [w,h]=ratio==='16:9'?[1920,1080]:ratio==='9:16'?[1080,1920]:[1080,1080];
-  try {
-    const res=await fetch('/.netlify/functions/heygen?path=video/generate&version=v2',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ video_inputs:[{ character:{type:'avatar',avatar_id:hgSelectedAvatar,avatar_style:'normal'}, voice:{type:'text',input_text:script,voice_id:hgSelectedVoice} }], dimension:{width:w,height:h} })
-    });
-    const data=await res.json();
-    if (!res.ok||data.error) throw new Error(data.error?.message||data.message||'Failed');
-    const videoId=data.data?.video_id;
-    document.getElementById('hg-video-result').style.display='block';
-    setHgMsg(`✅ Video submitted! ID: ${videoId}`,'success');
-    document.getElementById('hg-video-id-input').value=videoId;
-    pollVideoStatus(videoId);
-  } catch(e) { setHgMsg(`Error: ${e.message}`,'error'); }
-  btn.disabled=false; btn.innerHTML='🎬 Generate Video';
-}
-
-function pollVideoStatus(videoId) {
-  let pct=15; document.getElementById('hg-progress').style.width='15%';
-  if (hgPollInterval) clearInterval(hgPollInterval);
-  hgPollInterval=setInterval(async()=>{
-    try {
-      const res=await fetch(`/.netlify/functions/heygen?path=video_status.get&video_id=${videoId}&version=v1`);
-      const data=await res.json(); const status=data.data?.status;
-      pct=Math.min(pct+8,90); document.getElementById('hg-progress').style.width=pct+'%';
-      if (status==='completed') {
-        clearInterval(hgPollInterval);
-        document.getElementById('hg-progress').style.width='100%';
-        document.getElementById('hg-status-icon').textContent='✅';
-        document.getElementById('hg-status-title').textContent='Video Ready!';
-        document.getElementById('hg-status-sub').textContent='Your avatar video has been generated.';
-        const url=data.data?.video_url;
-        if (url) document.getElementById('hg-status-box').insertAdjacentHTML('afterend',`<div class="video-result"><video controls src="${url}" style="width:100%;border-radius:14px;margin-top:12px"></video><div style="text-align:center;margin-top:10px"><a href="${url}" download target="_blank" style="display:inline-block;padding:10px 20px;background:var(--ink);color:#fff;border-radius:10px;font-family:var(--font-display);font-size:13px;font-weight:700;text-decoration:none">⬇ Download Video</a></div></div>`);
-      } else if (status==='failed') {
-        clearInterval(hgPollInterval);
-        document.getElementById('hg-status-icon').textContent='❌';
-        document.getElementById('hg-status-title').textContent='Generation Failed';
-        const errMsg = typeof data.data?.error === 'object' ? JSON.stringify(data.data.error) : (data.data?.error || 'Something went wrong. Check your HeyGen plan supports API video generation.');
-        document.getElementById('hg-status-sub').textContent = errMsg;
-      }
-    } catch(e){}
-  },8000);
-}
-
-async function checkVideoStatus() {
-  const videoId=document.getElementById('hg-video-id-input').value.trim();
-  if (!videoId) { setHgStatusMsg('Enter a video ID.','error'); return; }
-  try {
-    const res=await fetch(`/.netlify/functions/heygen?path=video_status.get&video_id=${videoId}&version=v1`);
-    const data=await res.json(); const status=data.data?.status;
-    const icons={completed:'✅',processing:'⏳',pending:'🕐',failed:'❌'};
-    document.getElementById('hg-status-result').innerHTML=`
-      <div class="video-status">
-        <div class="video-status-icon">${icons[status]||'❓'}</div>
-        <div class="video-status-title">Status: ${status}</div>
-        ${data.data?.video_url?`<div style="margin-top:12px"><video controls src="${data.data.video_url}" style="width:100%;border-radius:10px"></video><div style="text-align:center;margin-top:8px"><a href="${data.data.video_url}" download target="_blank" style="display:inline-block;padding:9px 18px;background:var(--ink);color:#fff;border-radius:9px;font-family:var(--font-display);font-size:13px;font-weight:700;text-decoration:none">⬇ Download</a></div></div>`:''}
-      </div>`;
-    setHgStatusMsg('','');
-  } catch(e) { setHgStatusMsg(`Error: ${e.message}`,'error'); }
-}
-function setHgMsg(t,type) { const el=document.getElementById('hg-msg'); el.textContent=t; el.className=type?`form-msg ${type} show`:'form-msg'; }
-function setHgStatusMsg(t,type) { const el=document.getElementById('hg-status-msg'); el.textContent=t; el.className=type?`form-msg ${type} show`:'form-msg'; }
-
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
-const CFG_KEY = 'nexusai_supabase';
-// ── Hardcoded Supabase credentials ──────
-const SUPABASE_URL = 'https://ekgqeuctrlnjicdopbbk.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ3FldWN0cmxuamljZG9wYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTIzNTksImV4cCI6MjA4OTcyODM1OX0.QaLXp4Rrt7Rme_KvdmbS7dMPpJtx6X_oG8S2chZlxjE';
-let sb = null;
-let demo = false;
-
-function getCfg() { return { url: SUPABASE_URL, key: SUPABASE_KEY }; }
-
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ─────────────────────────────────────────
-// BOOTSTRAP
-// ─────────────────────────────────────────
-async function boot() {
-  const cfg = getCfg();
-  sb = window.supabase.createClient(cfg.url, cfg.key);
-
-  // Handle OAuth redirect back
-  if (location.hash.includes('access_token')) {
-    try {
-      const { data } = await sb.auth.getSession();
-      if (data.session) {
-        history.replaceState(null, '', location.pathname);
-        loadDash(data.session.user); show('dashboard-screen'); return;
-      }
-    } catch(e) {}
-  }
-
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) { loadDash(session.user); show('dashboard-screen'); }
-  else show('auth-screen');
-
-  sb.auth.onAuthStateChange((_e, session) => {
-    if (session) { loadDash(session.user); show('dashboard-screen'); }
-    else show('auth-screen');
-  });
-}
-
-// ─────────────────────────────────────────
-// SETUP
-// ─────────────────────────────────────────
-function saveConfig() {
-  const url = document.getElementById('sb-url').value.trim();
-  const key = document.getElementById('sb-key').value.trim();
-  if (!url || !key) { setMsg('setup-msg','Fill in both fields.','error'); return; }
-  if (!url.startsWith('https://')) { setMsg('setup-msg','URL must start with https://','error'); return; }
-  if (key.length < 20) { setMsg('setup-msg','That doesn\'t look like a valid key.','error'); return; }
-  localStorage.setItem(CFG_KEY, JSON.stringify({ url, key }));
-  setMsg('setup-msg','Saved! Loading…','success');
-  setTimeout(() => { sb = window.supabase.createClient(url, key); sb.auth.onAuthStateChange((_e,s)=>{ if(s){loadDash(s.user);show('dashboard-screen');} }); show('auth-screen'); }, 800);
-}
-
-function enterDemoMode(e) {
-  e.preventDefault();
-  localStorage.setItem(CFG_KEY, JSON.stringify({ demo: true }));
-  demo = true;
-  document.getElementById('demo-badge-wrap').style.display = '';
-  show('auth-screen');
-}
-
-function clearConfig(e) {
-  e.preventDefault();
-  localStorage.removeItem(CFG_KEY);
-  sb = null; demo = false;
-  show('setup-screen');
-}
-
-// ─────────────────────────────────────────
-// AUTH UI HELPERS
-// ─────────────────────────────────────────
-function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', i===(tab==='login'?0:1)));
-  document.getElementById('login-form').style.display   = tab==='login'  ? '' : 'none';
-  document.getElementById('signup-form').style.display  = tab==='signup' ? '' : 'none';
-  document.getElementById('confirm-view').style.display = 'none';
-  document.getElementById('auth-footer').style.display  = '';
-  setMsg('auth-msg','','');
-}
-
-function setMsg(id, text, type) {
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.className = type ? `form-msg ${type} show` : 'form-msg';
-}
-
-function setBtnLoading(id, on, label) {
-  const b = document.getElementById(id); if (!b) return;
-  b.disabled = on;
-  b.innerHTML = on ? `<span class="spinner"></span>${label}` : (b.dataset.orig || label);
-  if (!on) b.dataset.orig = b.innerHTML;
-}
-
-function togglePw(id, btn) {
-  const i = document.getElementById(id);
-  i.type = i.type==='password' ? 'text' : 'password';
-  btn.innerHTML = i.type==='password'
-    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
-}
-
-// ─────────────────────────────────────────
-// GOOGLE OAUTH
-// ─────────────────────────────────────────
-async function signInWithGoogle() {
-  if (demo) { loadDash({ email:'demo@gmail.com', user_metadata:{ full_name:'Demo User' } }); show('dashboard-screen'); return; }
-  if (!sb) { setMsg('auth-msg','Supabase not configured.','error'); return; }
-  const btn = document.getElementById('google-btn');
-  btn.disabled = true;
-  btn.innerHTML = `<span class="spinner" style="border-color:rgba(0,0,0,.15);border-top-color:var(--ink)"></span>Connecting to Google…`;
-  const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: 'https://shaang42.github.io/nexusai' } });
-  if (error) { setMsg('auth-msg', error.message, 'error'); btn.disabled=false; btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Continue with Google`; }
-}
-
-// ─────────────────────────────────────────
-// EMAIL LOGIN
-// ─────────────────────────────────────────
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-pw').value;
-  if (!email || !pw) { setMsg('auth-msg','Please fill in all fields.','error'); return; }
-  if (demo) {
-    if (pw.length < 4) { setMsg('auth-msg','Demo: use any password (4+ chars).','error'); return; }
-    loadDash({ email, user_metadata:{ full_name: email.split('@')[0] } }); show('dashboard-screen'); return;
-  }
-  if (!sb) return;
-  setBtnLoading('login-btn', true, 'Signing in…');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-  setBtnLoading('login-btn', false, 'Sign in →');
-  if (error) { setMsg('auth-msg', error.message, 'error'); return; }
-  loadDash(data.user); show('dashboard-screen');
-}
-
-// ─────────────────────────────────────────
-// EMAIL SIGNUP
-// ─────────────────────────────────────────
-async function doSignup() {
-  const name  = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const pw    = document.getElementById('signup-pw').value;
-  if (!name||!email||!pw) { setMsg('auth-msg','Please fill in all fields.','error'); return; }
-  if (pw.length < 8)      { setMsg('auth-msg','Password must be at least 8 characters.','error'); return; }
-  if (demo) { loadDash({ email, user_metadata:{ full_name: name } }); show('dashboard-screen'); return; }
-  if (!sb) return;
-  setBtnLoading('signup-btn', true, 'Creating account…');
-  const { error } = await sb.auth.signUp({ email, password: pw, options:{ data:{ full_name: name } } });
-  setBtnLoading('signup-btn', false, 'Create account →');
-  if (error) { setMsg('auth-msg', error.message, 'error'); return; }
-  document.getElementById('confirm-email').textContent = email;
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('auth-footer').style.display = 'none';
-  document.getElementById('confirm-view').style.display = '';
-}
-
-// ─────────────────────────────────────────
-// FORGOT PASSWORD
-// ─────────────────────────────────────────
-async function forgotPassword(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  if (!email) { setMsg('auth-msg','Enter your email address above first.','error'); return; }
-  if (demo)   { setMsg('auth-msg','Password reset not available in demo mode.','info'); return; }
-  if (!sb) return;
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://shaang42.github.io/nexusai' });
-  setMsg('auth-msg', error ? error.message : 'Reset link sent! Check your inbox.', error ? 'error' : 'success');
-}
-
-// ─────────────────────────────────────────
-// LOGOUT
-// ─────────────────────────────────────────
-async function doLogout() {
-  if (!demo && sb) await sb.auth.signOut();
-  show('auth-screen');
-}
-
-// ─────────────────────────────────────────
-// DASHBOARD POPULATE
-// ─────────────────────────────────────────
-function loadDash(user) {
-  const meta  = user.user_metadata || {};
-  const name  = meta.full_name || meta.name || user.email?.split('@')[0] || 'User';
-  const first = name.split(' ')[0];
-  const pic   = meta.avatar_url || '';
-
-  document.getElementById('welcome-name').textContent = first;
-  document.getElementById('sb-name').textContent      = first;
-  document.getElementById('sb-role').textContent      = demo ? 'Demo Mode' : 'Free Plan';
-  document.getElementById('set-name').value           = name;
-  document.getElementById('set-email').value          = user.email || '';
-
-  const av = document.getElementById('sb-avatar');
-  av.innerHTML = pic ? `<img src="${pic}" alt="${first}">` : first[0].toUpperCase();
-}
-
-// ─────────────────────────────────────────
-// SETTINGS
-// ─────────────────────────────────────────
-async function saveProfile() {
-  const name = document.getElementById('set-name').value.trim();
-  if (!name) { setMsg('profile-msg','Name cannot be empty.','error'); return; }
-  if (!demo && sb) {
-    const { error } = await sb.auth.updateUser({ data:{ full_name: name } });
-    if (error) { setMsg('profile-msg', error.message, 'error'); return; }
-  }
-  const first = name.split(' ')[0];
-  document.getElementById('welcome-name').textContent = first;
-  document.getElementById('sb-name').textContent      = first;
-  document.getElementById('sb-avatar').textContent    = first[0].toUpperCase();
-  setMsg('profile-msg','Profile updated successfully!','success');
-  setTimeout(() => setMsg('profile-msg','',''), 3000);
-}
-
-async function sendPwReset() {
-  const email = document.getElementById('set-email').value;
-  if (!email || demo) { alert('Password reset requires Supabase auth.'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://shaang42.github.io/nexusai' });
-  alert(error ? error.message : 'Reset email sent! Check your inbox.');
-}
-
-// ─────────────────────────────────────────
-// NAV
-// ─────────────────────────────────────────
-function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+function showPage(id,navEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
 }
 
-// ─────────────────────────────────────────
-// GO
-// ─────────────────────────────────────────
+// ── AUTH ─────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
+  document.getElementById('login-form').style.display   = tab==='login'  ?'':'none';
+  document.getElementById('signup-form').style.display  = tab==='signup' ?'':'none';
+  document.getElementById('confirm-form').style.display = 'none';
+  setAuthMsg('','');
+}
+function setAuthMsg(t,type) {
+  const el=document.getElementById('auth-msg');
+  el.textContent=t; el.className='form-msg'+(type?' '+type+' show':'');
+}
+function togglePw(id,btn) {
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+  btn.innerHTML=i.type==='password'
+    ?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+    :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+}
+async function signInGoogle() {
+  if (!sb) return;
+  const btn=document.getElementById('google-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner spinner-dark"></span> Connecting…';
+  const {error} = await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:REDIR}});
+  if (error) { setAuthMsg(error.message,'error'); btn.disabled=false; btn.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg> Continue with Google'; }
+}
+async function doLogin() {
+  const email=document.getElementById('login-email').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  if (!email||!pw) { setAuthMsg('Please fill in all fields.','error'); return; }
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Signing in…';
+  const {data,error} = await sb.auth.signInWithPassword({email,password:pw});
+  btn.disabled=false; btn.textContent='Sign in';
+  if (error) { setAuthMsg(error.message,'error'); return; }
+  enterApp(data.user);
+}
+async function doSignup() {
+  const name=document.getElementById('signup-name').value.trim();
+  const email=document.getElementById('signup-email').value.trim();
+  const pw=document.getElementById('signup-pw').value;
+  if (!name||!email||!pw) { setAuthMsg('Please fill in all fields.','error'); return; }
+  if (pw.length<8) { setAuthMsg('Password must be at least 8 characters.','error'); return; }
+  const btn=document.getElementById('signup-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Creating account…';
+  const {error} = await sb.auth.signUp({email,password:pw,options:{data:{full_name:name}}});
+  btn.disabled=false; btn.textContent='Create account';
+  if (error) { setAuthMsg(error.message,'error'); return; }
+  document.getElementById('confirm-email').textContent=email;
+  document.getElementById('signup-form').style.display='none';
+  document.getElementById('confirm-form').style.display='';
+}
+async function forgotPw(e) {
+  e.preventDefault();
+  const email=document.getElementById('login-email').value.trim();
+  if (!email) { setAuthMsg('Enter your email above first.','error'); return; }
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:REDIR});
+  setAuthMsg(error?error.message:'Reset link sent! Check your inbox.',error?'error':'success');
+}
+async function doLogout() {
+  await sb.auth.signOut();
+  show('auth-screen');
+}
+
+// ── SETTINGS ─────────────────────────────────────
+async function saveProfile() {
+  const name=document.getElementById('set-name').value.trim();
+  const el=document.getElementById('profile-msg');
+  if (!name) { el.textContent='Name cannot be empty.'; el.className='form-msg error show'; return; }
+  const {error}=await sb.auth.updateUser({data:{full_name:name}});
+  if (error) { el.textContent=error.message; el.className='form-msg error show'; return; }
+  const first=name.split(' ')[0];
+  document.getElementById('nav-name').textContent=first;
+  document.getElementById('nav-av').textContent=first[0].toUpperCase();
+  el.textContent='Saved!'; el.className='form-msg success show';
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+async function sendPwReset() {
+  const email=document.getElementById('set-email').value;
+  if (!email) return;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:REDIR});
+  showToast(error?error.message:'Reset email sent!',error?'error':'success');
+}
+
+// ── GO ───────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>
