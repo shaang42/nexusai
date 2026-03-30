@@ -347,6 +347,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .btn-xs-primary:hover{background:var(--accent-h)}
 .btn-xs-ghost{background:transparent;color:var(--text2);border-color:var(--border)}
 .btn-xs-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-xs-play{background:transparent;color:var(--text2);border-color:var(--border);padding:6px 8px;}
+.btn-xs-play:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
 
 /* ── HISTORY ── */
 .history-list{display:flex;flex-direction:column;gap:8px}
@@ -922,6 +924,7 @@ const REDIR   = 'https://shaang42.github.io/nexusai/';
 // ── STATE ───────────────────────────────────────
 let sb, user, voices=[], selId=null, selName=null, audioBlob=null, genHistory=[];
 const PALETTE = ['#5c4bff','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#db2777'];
+const previewCache = new Map(); // cache generated preview blobs per voice_id
 
 // ── BOOT ────────────────────────────────────────
 async function boot() {
@@ -1017,6 +1020,9 @@ function renderLibrary(list) {
       <div class="vc-name">${v.name}</div>
       <div class="vc-meta">${v.labels?.accent||'English'} · ${v.labels?.gender||'AI Voice'}</div>
       <div class="vc-actions">
+        <button class="btn-xs btn-xs-play" onclick="event.stopPropagation();playVoiceSample('${v.voice_id}','${v.name.replace(/'/g,'')}')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play
+        </button>
         <button class="btn-xs btn-xs-primary" onclick="event.stopPropagation();selectVoice('${v.voice_id}','${v.name.replace(/'/g,'')}');showPage('studio',document.querySelector('.nav-item'))">Use voice</button>
         ${v.preview_url?`<button class="btn-xs btn-xs-ghost" onclick="event.stopPropagation();playPreview(event,'${v.preview_url}')">Preview</button>`:''}
       </div>
@@ -1044,6 +1050,54 @@ function filterLibrary() {
 }
 
 function playPreview(e, url) { e.stopPropagation(); new Audio(url).play(); }
+
+// ── PLAY VOICE SAMPLE (uses API if no preview_url) ──
+async function playVoiceSample(voiceId, voiceName) {
+  // check if we have cached blob
+  if (previewCache.has(voiceId)) {
+    const blob = previewCache.get(voiceId);
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.play();
+    return;
+  }
+  // find voice object to check for preview_url
+  const voice = voices.find(v=>v.voice_id===voiceId);
+  if (voice?.preview_url) {
+    // use existing preview_url
+    const audio = new Audio(voice.preview_url);
+    audio.play();
+    return;
+  }
+  // generate a short sample using ElevenLabs
+  const btn = document.activeElement; // just for visual feedback
+  const originalText = btn.innerText;
+  btn.innerText = '🔄';
+  try {
+    const sampleText = "Hello, this is a sample of my voice.";
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{
+      method:'POST',
+      headers:{'xi-api-key':EL_KEY,'Content-Type':'application/json','Accept':'audio/mpeg'},
+      body:JSON.stringify({
+        text: sampleText,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings:{ stability:0.5, similarity_boost:0.75 }
+      })
+    });
+    if (!res.ok) throw new Error('Sample generation failed');
+    const blob = await res.blob();
+    previewCache.set(voiceId, blob);
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    audio.play();
+  } catch(err) {
+    showToast('Could not play sample: '+err.message, 'error');
+  } finally {
+    btn.innerText = originalText;
+  }
+}
 
 // ── CREDITS ─────────────────────────────────────
 async function loadCredits() {
