@@ -786,6 +786,24 @@ input[type=range]{width:100%;accent-color:var(--accent)}
           <!-- Right: Settings -->
           <div style="display:flex;flex-direction:column;gap:16px">
             <div class="card">
+              <div class="card-head"><div class="card-head-title">Model</div></div>
+              <div class="card-body">
+                <select class="select-input" id="img-model">
+                  <option value="flux">Flux — Best quality (default)</option>
+                  <option value="turbo">Turbo — Faster generation</option>
+                  <option value="flux-realism">Flux Realism — Photorealistic</option>
+                  <option value="flux-anime">Flux Anime — Anime style</option>
+                  <option value="flux-3d">Flux 3D — 3D renders</option>
+                </select>
+                <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+                  <input type="checkbox" id="img-enhance" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+                  <label for="img-enhance" style="font-size:13px;font-weight:500;color:var(--text2);cursor:pointer">AI prompt enhancement</label>
+                </div>
+                <div style="font-size:11px;color:var(--text3);margin-top:4px;padding-left:26px">Automatically improves your prompt for better results</div>
+              </div>
+            </div>
+
+            <div class="card">
               <div class="card-head"><div class="card-head-title">Style</div></div>
               <div class="card-body">
                 <div class="style-grid" id="style-grid">
@@ -1225,9 +1243,123 @@ async function sendPwReset() {
 // ── IMAGE & VIDEO ────────────────────────────────
 let imgStyle = 'photographic';
 let imgRatio = '1:1';
-const SA_KEY = 'sk-P9QX6Gp4BK9MEtxamZzPN80w28zt9LNxJKFnD6idD6jI6Q4M';
+// Pollinations.ai — completely free, no API key needed!
 
-function saveSAKey() {} // no longer needed
+function setStyle(style, btn) {
+  imgStyle = style;
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setRatio(ratio, btn) {
+  imgRatio = ratio;
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setImgPrompt(txt) {
+  document.getElementById('img-prompt').value = txt;
+}
+
+// Convert ratio to width/height
+function ratioToSize(ratio) {
+  const map = {
+    '1:1':  [1024, 1024],
+    '16:9': [1280, 720],
+    '9:16': [720,  1280],
+    '4:3':  [1024, 768],
+    '3:4':  [768,  1024],
+  };
+  return map[ratio] || [1024, 1024];
+}
+
+async function generateImage() {
+  const prompt = document.getElementById('img-prompt').value.trim();
+  const negative = document.getElementById('img-negative').value.trim();
+  const count = parseInt(document.getElementById('img-count').value);
+  const model = document.getElementById('img-model').value;
+  const enhance = document.getElementById('img-enhance').checked;
+  const [width, height] = ratioToSize(imgRatio);
+
+  if (!prompt) { setImgMsg('Please describe the image you want to generate.', 'error'); return; }
+
+  const btn = document.getElementById('img-gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  setImgMsg('', '');
+
+  // Show skeletons while loading
+  const resultsArea = document.getElementById('img-results-area');
+  resultsArea.innerHTML = `<div class="img-result-grid">${Array(count).fill('<div class="img-skeleton"></div>').join('')}</div>`;
+
+  const results = [];
+
+  // Generate all images in parallel — each with a different seed
+  const promises = Array(count).fill(null).map(async (_, i) => {
+    try {
+      const seed = Math.floor(Math.random() * 999999) + i;
+      const encodedPrompt = encodeURIComponent(prompt + (imgStyle ? `, ${imgStyle} style` : ''));
+      const params = new URLSearchParams({
+        width, height, seed,
+        model,
+        nologo: 'true',
+        enhance: enhance ? 'true' : 'false',
+        ...(negative ? { negative_prompt: negative } : {})
+      });
+      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?${params}`;
+
+      // Fetch as blob for download support
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed (${res.status})`);
+      const blob = await res.blob();
+      results[i] = { url: URL.createObjectURL(blob), blob, prompt, seed };
+    } catch(e) {
+      results[i] = { error: e.message };
+    }
+  });
+
+  await Promise.all(promises);
+
+  const ok = results.filter(r => !r.error);
+  const fail = results.filter(r => r.error);
+
+  if (!ok.length) {
+    setImgMsg(fail[0]?.error || 'Generation failed. Please try again.', 'error');
+    resultsArea.innerHTML = '<div class="img-empty"><div class="img-empty-icon">❌</div><div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px">Generation failed</div><div>Please try again</div></div>';
+  } else {
+    window._imgResults = ok;
+    resultsArea.innerHTML = `<div class="img-result-grid">${ok.map((r,i) => `
+      <div class="img-result-item">
+        <img src="${r.url}" alt="${prompt}" loading="lazy">
+        <div class="img-overlay">
+          <button class="btn-img-dl" onclick="downloadImg(${i})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+      </div>`).join('')}</div>`;
+    if (fail.length) setImgMsg(`${ok.length} images generated, ${fail.length} failed.`, 'info');
+    else showToast(`${ok.length} image${ok.length > 1 ? 's' : ''} generated!`, 'success');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Generate Image';
+}
+
+function downloadImg(idx) {
+  const r = window._imgResults?.[idx];
+  if (!r) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(r.blob);
+  a.download = `voicelab-image-${Date.now()}-${idx+1}.jpg`;
+  a.click();
+}
+
+function setImgMsg(text, type) {
+  const el = document.getElementById('img-msg');
+  el.textContent = text;
+  el.className = 'form-msg' + (type ? ` ${type} show` : '');
+}
 
 function setStyle(style, btn) {
   imgStyle = style;
@@ -1248,7 +1380,7 @@ function setImgPrompt(txt) {
 async function generateImage() {
   const prompt = document.getElementById('img-prompt').value.trim();
   const negative = document.getElementById('img-negative').value.trim();
-  const key = SA_KEY;
+  // key not needed — Pollinations is free
   const count = parseInt(document.getElementById('img-count').value);
   const cfg = parseFloat(document.getElementById('cfg-scale').value);
   const msgEl = document.getElementById('img-msg');
