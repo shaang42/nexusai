@@ -386,6 +386,87 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .profile-fields .field{margin:0}
 .profile-save{padding:0 20px 20px}
 
+/* ── IMAGE & VIDEO PAGE ── */
+.img-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+.img-prompt-wrap{position:relative}
+.img-prompt-wrap textarea{
+  width:100%;min-height:120px;padding:14px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:14px;
+  color:var(--text);outline:none;resize:vertical;line-height:1.6;
+  transition:var(--transition);
+}
+.img-prompt-wrap textarea::placeholder{color:var(--text3)}
+.img-prompt-wrap textarea:focus{border-color:var(--accent);background:var(--white);box-shadow:0 0 0 3px var(--accent-l)}
+.style-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
+.style-btn{
+  padding:8px 6px;border-radius:var(--radius);border:1.5px solid var(--border);
+  background:var(--white);font-family:var(--font);font-size:11px;font-weight:600;
+  color:var(--text2);cursor:pointer;transition:var(--transition);text-align:center;
+}
+.style-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.style-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ratio-row{display:flex;gap:8px;flex-wrap:wrap}
+.ratio-btn{
+  padding:7px 14px;border-radius:var(--radius);border:1.5px solid var(--border);
+  background:var(--white);font-family:var(--font);font-size:12px;font-weight:600;
+  color:var(--text2);cursor:pointer;transition:var(--transition);
+}
+.ratio-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ratio-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.img-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:20px}
+.img-result-item{
+  border-radius:var(--radius-lg);overflow:hidden;
+  background:var(--bg);border:1px solid var(--border);
+  position:relative;group;transition:var(--transition);
+}
+.img-result-item:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.img-result-item img{width:100%;display:block;aspect-ratio:1;object-fit:cover}
+.img-result-item .img-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);
+  display:flex;align-items:flex-end;padding:12px;
+  opacity:0;transition:var(--transition);
+}
+.img-result-item:hover .img-overlay{opacity:1}
+.btn-img-dl{
+  padding:6px 12px;background:var(--white);color:var(--text);
+  border:none;border-radius:var(--radius);font-family:var(--font);
+  font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);
+  display:flex;align-items:center;gap:5px;
+}
+.btn-img-dl:hover{background:var(--accent);color:#fff}
+.img-skeleton{
+  width:100%;aspect-ratio:1;
+  background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;
+  border-radius:var(--radius-lg);
+}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.img-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.img-empty-icon{font-size:40px;margin-bottom:12px;opacity:.3}
+.negative-prompt{margin-top:12px}
+.negative-prompt textarea{min-height:60px;font-size:13px}
+.prompt-examples{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.prompt-ex{
+  padding:5px 10px;border-radius:99px;font-size:11px;font-weight:500;
+  background:var(--white);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;transition:var(--transition);
+}
+.prompt-ex:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.api-key-notice{
+  background:var(--accent-l);border:1px solid var(--accent-l2);
+  border-radius:var(--radius);padding:12px 14px;
+  font-size:13px;color:var(--accent);margin-bottom:16px;
+  display:flex;align-items:flex-start;gap:8px;
+}
+.api-key-notice svg{flex-shrink:0;margin-top:1px}
+.sa-key-field{
+  width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);font-family:var(--font);font-size:13px;color:var(--text);
+  outline:none;transition:var(--transition);margin-top:6px;
+}
+.sa-key-field:focus{border-color:var(--accent);background:var(--white)}
+
 /* Toast */
 .toast{position:fixed;bottom:20px;right:20px;z-index:9999;padding:11px 16px;border-radius:var(--radius);font-size:13px;font-weight:500;display:none;align-items:center;gap:8px;animation:fadeUp .25s ease;max-width:340px;box-shadow:var(--shadow-md)}
 .toast.show{display:flex}
@@ -518,6 +599,10 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         Voice Library
         <span class="nav-pill" id="voice-count">—</span>
       </button>
+      <button class="nav-item" onclick="showPage('images',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Image & Video
+      </button>
       <button class="nav-item" onclick="showPage('history',this)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         History
@@ -645,6 +730,119 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         </div>
         <div class="voices-grid" id="voices-grid">
           <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)">Loading voices…</div>
+        </div>
+      </div>
+
+      <!-- IMAGE & VIDEO -->
+      <div class="page" id="page-images">
+        <div class="page-hd">
+          <h1>Image & Video</h1>
+          <p>Generate images from text prompts using Stability AI</p>
+        </div>
+
+        <div class="img-layout">
+          <!-- Left: Prompt + Results -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-head-title">Describe your image</div>
+                <span class="card-head-badge">Stability AI</span>
+              </div>
+              <div class="card-body">
+                <div class="prompt-examples">
+                  <span class="prompt-ex" onclick="setImgPrompt('A serene mountain landscape at golden hour, photorealistic')">🏔 Landscape</span>
+                  <span class="prompt-ex" onclick="setImgPrompt('Professional headshot of a confident businessperson, studio lighting')">👤 Portrait</span>
+                  <span class="prompt-ex" onclick="setImgPrompt('Futuristic city skyline at night with neon lights, cinematic')">🌆 Cityscape</span>
+                  <span class="prompt-ex" onclick="setImgPrompt('Abstract colorful art, fluid shapes and vibrant colors, digital art')">🎨 Abstract</span>
+                  <span class="prompt-ex" onclick="setImgPrompt('A cozy coffee shop interior, warm lighting, film photography style')">☕ Interior</span>
+                </div>
+
+                <textarea id="img-prompt" placeholder="Describe what you want to see… e.g. 'A serene mountain lake at sunset, photorealistic, 8K detail'" rows="4"></textarea>
+
+                <div class="negative-prompt" style="margin-top:10px">
+                  <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase">Negative prompt (optional)</div>
+                  <textarea id="img-negative" class="main-input" style="min-height:60px;font-size:13px" placeholder="Things to avoid… e.g. blurry, low quality, distorted"></textarea>
+                </div>
+
+                <div class="form-msg" id="img-msg" style="margin-top:14px"></div>
+
+                <button class="btn-gen" id="img-gen-btn" onclick="generateImage()" style="margin-top:16px;background:linear-gradient(135deg,#5c4bff,#7c3aed)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  Generate Image
+                </button>
+              </div>
+            </div>
+
+            <!-- Results grid -->
+            <div id="img-results-area">
+              <div class="img-empty">
+                <div class="img-empty-icon">🖼️</div>
+                <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px">No images yet</div>
+                <div>Describe an image above and click Generate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Settings -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">API Key</div></div>
+              <div class="card-body">
+                <div class="api-key-notice">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Get a free key at <a href="https://platform.stability.ai" target="_blank" style="color:var(--accent);font-weight:700">platform.stability.ai</a> — 25 free images/month
+                </div>
+                <input class="sa-key-field" type="password" id="sa-key" placeholder="sk-…  paste your Stability AI key" oninput="saveSAKey()">
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">Style</div></div>
+              <div class="card-body">
+                <div class="style-grid" id="style-grid">
+                  <button class="style-btn active" onclick="setStyle('photographic',this)">📷 Photo</button>
+                  <button class="style-btn" onclick="setStyle('digital-art',this)">🎨 Digital Art</button>
+                  <button class="style-btn" onclick="setStyle('cinematic',this)">🎬 Cinematic</button>
+                  <button class="style-btn" onclick="setStyle('anime',this)">✨ Anime</button>
+                  <button class="style-btn" onclick="setStyle('3d-model',this)">🧊 3D</button>
+                  <button class="style-btn" onclick="setStyle('comic-book',this)">💬 Comic</button>
+                  <button class="style-btn" onclick="setStyle('line-art',this)">✏️ Line Art</button>
+                  <button class="style-btn" onclick="setStyle('',this)">🎲 None</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">Aspect Ratio</div></div>
+              <div class="card-body">
+                <div class="ratio-row" id="ratio-row">
+                  <button class="ratio-btn active" onclick="setRatio('1:1',this)">1:1 Square</button>
+                  <button class="ratio-btn" onclick="setRatio('16:9',this)">16:9 Wide</button>
+                  <button class="ratio-btn" onclick="setRatio('9:16',this)">9:16 Portrait</button>
+                  <button class="ratio-btn" onclick="setRatio('4:3',this)">4:3</button>
+                  <button class="ratio-btn" onclick="setRatio('3:4',this)">3:4</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><div class="card-head-title">Quality</div></div>
+              <div class="card-body">
+                <div class="setting-row">
+                  <div class="setting-label">CFG Scale <b id="cfg-val">7</b></div>
+                  <input type="range" min="1" max="20" value="7" id="cfg-scale" oninput="document.getElementById('cfg-val').textContent=this.value">
+                </div>
+                <div class="setting-row" style="margin-bottom:0">
+                  <div class="setting-label">Images to generate</div>
+                  <select class="select-input" id="img-count">
+                    <option value="1">1 image</option>
+                    <option value="2">2 images</option>
+                    <option value="4" selected>4 images</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1033,6 +1231,136 @@ async function sendPwReset() {
   if (!email) return;
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:REDIR});
   showToast(error?error.message:'Reset email sent!',error?'error':'success');
+}
+
+// ── IMAGE & VIDEO ────────────────────────────────
+let imgStyle = 'photographic';
+let imgRatio = '1:1';
+let saKey = localStorage.getItem('sa_key') || '';
+
+function saveSAKey() {
+  saKey = document.getElementById('sa-key').value.trim();
+  localStorage.setItem('sa_key', saKey);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('sa_key');
+  if (saved) document.getElementById('sa-key').value = saved;
+});
+
+function setStyle(style, btn) {
+  imgStyle = style;
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setRatio(ratio, btn) {
+  imgRatio = ratio;
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setImgPrompt(txt) {
+  document.getElementById('img-prompt').value = txt;
+}
+
+async function generateImage() {
+  const prompt = document.getElementById('img-prompt').value.trim();
+  const negative = document.getElementById('img-negative').value.trim();
+  const key = document.getElementById('sa-key').value.trim() || saKey;
+  const count = parseInt(document.getElementById('img-count').value);
+  const cfg = parseFloat(document.getElementById('cfg-scale').value);
+  const msgEl = document.getElementById('img-msg');
+
+  if (!prompt) { setImgMsg('Please describe the image you want to generate.', 'error'); return; }
+  if (!key) { setImgMsg('Please enter your Stability AI API key above.', 'error'); return; }
+
+  const btn = document.getElementById('img-gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+  setImgMsg('', '');
+
+  // Show skeletons
+  const resultsArea = document.getElementById('img-results-area');
+  resultsArea.innerHTML = `<div class="img-result-grid">${Array(count).fill('<div class="img-skeleton"></div>').join('')}</div>`;
+
+  const results = [];
+  const promises = Array(count).fill(null).map(async (_, i) => {
+    try {
+      const formData = new FormData();
+      formData.append('prompt', prompt);
+      formData.append('aspect_ratio', imgRatio);
+      formData.append('cfg_scale', cfg);
+      formData.append('output_format', 'jpeg');
+      if (imgStyle) formData.append('style_preset', imgStyle);
+      if (negative) formData.append('negative_prompt', negative);
+
+      const res = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key}`,
+          'Accept': 'image/*'
+        },
+        body: formData
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        let errMsg = `Error ${res.status}`;
+        try { const errJson = JSON.parse(errText); errMsg = errJson.message || errJson.errors?.[0] || errMsg; } catch {}
+        throw new Error(errMsg);
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      results[i] = { url, blob, prompt };
+    } catch(e) {
+      results[i] = { error: e.message };
+    }
+  });
+
+  await Promise.all(promises);
+
+  // Render results
+  const successItems = results.filter(r => !r.error);
+  const errorItems = results.filter(r => r.error);
+
+  if (!successItems.length) {
+    setImgMsg(errorItems[0]?.error || 'Generation failed. Check your API key.', 'error');
+    resultsArea.innerHTML = '<div class="img-empty"><div class="img-empty-icon">❌</div><div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px">Generation failed</div><div>Check your API key and try again</div></div>';
+  } else {
+    resultsArea.innerHTML = `<div class="img-result-grid">${successItems.map((r, i) => `
+      <div class="img-result-item">
+        <img src="${r.url}" alt="${prompt}" loading="lazy">
+        <div class="img-overlay">
+          <button class="btn-img-dl" onclick="downloadImg(${i})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+        </div>
+      </div>`).join('')}</div>`;
+    window._imgResults = successItems;
+    if (errorItems.length) setImgMsg(`${successItems.length} images generated, ${errorItems.length} failed.`, 'info');
+    else { setImgMsg('', ''); showToast(`${successItems.length} image${successItems.length>1?'s':''} generated!`, 'success'); }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Generate Image';
+}
+
+function downloadImg(idx) {
+  const r = window._imgResults?.[idx];
+  if (!r) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(r.blob);
+  a.download = `voicelab-image-${Date.now()}-${idx+1}.jpg`;
+  a.click();
+}
+
+function setImgMsg(text, type) {
+  const el = document.getElementById('img-msg');
+  el.textContent = text;
+  el.className = 'form-msg' + (type ? ` ${type} show` : '');
 }
 
 // ── GO ───────────────────────────────────────────
