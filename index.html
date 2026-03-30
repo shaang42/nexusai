@@ -1260,7 +1260,6 @@ function setImgPrompt(txt) {
   document.getElementById('img-prompt').value = txt;
 }
 
-// Convert ratio to width/height
 function ratioToSize(ratio) {
   const map = {
     '1:1':  [1024, 1024],
@@ -1288,17 +1287,14 @@ async function generateImage() {
   btn.innerHTML = '<span class="spinner"></span> Generating…';
   setImgMsg('', '');
 
-  // Show skeletons while loading
   const resultsArea = document.getElementById('img-results-area');
   resultsArea.innerHTML = `<div class="img-result-grid">${Array(count).fill('<div class="img-skeleton"></div>').join('')}</div>`;
 
   const results = [];
 
-  // Generate all images in parallel — each with a different seed
   const promises = Array(count).fill(null).map(async (_, i) => {
     try {
       const seed = Math.floor(Math.random() * 999999) + i;
-      // Build the full prompt with style
       let fullPrompt = prompt;
       if (imgStyle && imgStyle !== '') {
         fullPrompt += `, ${imgStyle} style`;
@@ -1316,7 +1312,6 @@ async function generateImage() {
       const encodedPrompt = encodeURIComponent(fullPrompt);
       const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?${params.toString()}`;
 
-      // Fetch as blob for download support
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Failed (${res.status})`);
       const blob = await res.blob();
