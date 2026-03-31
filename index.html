@@ -499,15 +499,65 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <section id="auth-screen" class="screen">
   <div class="auth-left">
     <div class="auth-left-brand">Voice<span>Lab</span></div>
+
     <div class="auth-left-content">
-      <div class="auth-eyebrow">AI Voice Studio</div>
-      <h1 class="auth-headline">Turn text into<br><span>human voice</span><br>in seconds.</h1>
-      <p class="auth-subline">Professional text-to-speech powered by ElevenLabs. 32 languages, 5,000+ voices, studio-quality audio.</p>
+      <h1 class="auth-headline">Turning text into<br><span>human voice.</span></h1>
+      <p class="auth-subline">Professional AI voice generation for creators, businesses, and developers. 32 languages, 5,000+ voices.</p>
+      <div style="display:flex;gap:12px;margin-top:28px">
+        <button onclick="switchTab('signup')" style="padding:11px 24px;background:var(--text);color:#fff;border:none;border-radius:99px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Sign up</button>
+        <button onclick="switchTab('login')" style="padding:11px 24px;background:transparent;color:var(--text);border:1.5px solid var(--border2);border-radius:99px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer">Sign in</button>
+      </div>
     </div>
-    <div class="auth-features">
-      <div class="auth-feature"><span class="auth-feature-dot"></span>32 languages including Arabic, Hindi, English and more</div>
-      <div class="auth-feature"><span class="auth-feature-dot"></span>5,000+ natural AI voices to choose from</div>
-      <div class="auth-feature"><span class="auth-feature-dot"></span>Download studio-quality MP3 instantly</div>
+
+    <!-- Interactive demo widget like ElevenLabs -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:20px;max-width:520px;box-shadow:var(--shadow-md)">
+      <!-- Tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg);border-radius:99px;font-size:12px;font-weight:600;color:var(--text)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span>
+          Text to Voice
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:500;color:var(--text3)">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--border2);display:inline-block"></span>
+          Image & Video
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Text to Voice</div>
+          <div style="font-size:11px;color:var(--text3)">32 languages supported</div>
+        </div>
+      </div>
+
+      <!-- Voice list preview -->
+      <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:16px">
+        <div id="demo-v0" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border-radius:10px;cursor:pointer" onclick="playDemoVoice(0)">
+          <div style="width:32px;height:32px;border-radius:50%;background:#5c4bff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">R</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Rachel</div><div style="font-size:11px;color:var(--text3)">American · Female</div></div>
+          <div id="demo-play0" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:10px">▶</div>
+        </div>
+        <div id="demo-v1" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer" onclick="playDemoVoice(1)">
+          <div style="width:32px;height:32px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">J</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Josh</div><div style="font-size:11px;color:var(--text3)">American · Male</div></div>
+          <div id="demo-play1" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:10px">▶</div>
+        </div>
+        <div id="demo-v2" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer" onclick="playDemoVoice(2)">
+          <div style="width:32px;height:32px;border-radius:50%;background:#d97706;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">D</div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600">Daniel</div><div style="font-size:11px;color:var(--text3)">British · Male</div></div>
+          <div id="demo-play2" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:10px">▶</div>
+        </div>
+        <div style="padding:8px 12px;font-size:12px;color:var(--accent);font-weight:600;cursor:pointer" onclick="switchTab('signup')">Explore 5,000+ voices →</div>
+      </div>
+
+      <!-- Text preview -->
+      <div style="background:var(--bg);border-radius:12px;padding:14px 16px">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Sample text</div>
+        <div id="demo-text" style="font-size:14px;color:var(--text);line-height:1.6">In the age of AI, voices become bridges between thought and sound — bringing words to life with remarkable clarity.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)">
+            <span>🌍</span> English
+          </div>
+          <button onclick="playDemoVoice(0)" style="padding:8px 20px;background:var(--text);color:#fff;border:none;border-radius:99px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">▶ Play</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -924,7 +974,8 @@ const REDIR   = 'https://shaang42.github.io/nexusai/';
 // ── STATE ───────────────────────────────────────
 let sb, user, voices=[], selId=null, selName=null, audioBlob=null, genHistory=[];
 const PALETTE = ['#5c4bff','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#ea580c','#db2777'];
-const previewCache = new Map(); // cache generated preview blobs per voice_id
+const previewCache = new Map();
+let currentPreviewAudio = null; // Fix 3: only one audio at a time
 
 // ── BOOT ────────────────────────────────────────
 async function boot() {
@@ -1049,53 +1100,86 @@ function filterLibrary() {
   renderLibrary(filtered);
 }
 
-function playPreview(e, url) { e.stopPropagation(); new Audio(url).play(); }
+function stopCurrentAudio() {
+  if (currentPreviewAudio) {
+    currentPreviewAudio.pause();
+    currentPreviewAudio.currentTime = 0;
+    currentPreviewAudio = null;
+    // reset all play buttons
+    document.querySelectorAll('.btn-preview').forEach(b => b.textContent = '▶');
+    document.querySelectorAll('.btn-xs-play').forEach(b => b.textContent = '▶ Play');
+  }
+}
 
-// ── PLAY VOICE SAMPLE (uses API if no preview_url) ──
+function playPreview(e, url) {
+  e.stopPropagation();
+  const btn = e.currentTarget || e.target;
+  if (currentPreviewAudio && !currentPreviewAudio.paused) {
+    stopCurrentAudio();
+    return;
+  }
+  stopCurrentAudio();
+  const audio = new Audio(url);
+  currentPreviewAudio = audio;
+  btn.textContent = '⏹';
+  audio.play().catch(() => showToast('Could not play audio', 'error'));
+  audio.onended = () => { btn.textContent = '▶'; currentPreviewAudio = null; };
+}
+
+// ── PLAY VOICE SAMPLE (uses preview_url, stops other audio first) ──
 async function playVoiceSample(voiceId, voiceName) {
-  // check if we have cached blob
+  const voice = voices.find(v => v.voice_id === voiceId);
+  const btn = event?.currentTarget || document.activeElement;
+
+  // If already playing this voice, stop it
+  if (currentPreviewAudio && !currentPreviewAudio.paused) {
+    stopCurrentAudio();
+    return;
+  }
+  stopCurrentAudio();
+
+  // Use preview_url if available (all default voices have one)
+  if (voice?.preview_url) {
+    const audio = new Audio(voice.preview_url);
+    currentPreviewAudio = audio;
+    if (btn) btn.textContent = '⏹ Stop';
+    audio.play().catch(() => showToast('Could not play audio', 'error'));
+    audio.onended = () => { if (btn) btn.textContent = '▶ Play'; currentPreviewAudio = null; };
+    return;
+  }
+
+  // Check cache
   if (previewCache.has(voiceId)) {
     const blob = previewCache.get(voiceId);
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    audio.onended = () => URL.revokeObjectURL(url);
-    audio.play();
+    currentPreviewAudio = audio;
+    if (btn) btn.textContent = '⏹ Stop';
+    audio.play().catch(() => {});
+    audio.onended = () => { if (btn) btn.textContent = '▶ Play'; currentPreviewAudio = null; URL.revokeObjectURL(url); };
     return;
   }
-  // find voice object to check for preview_url
-  const voice = voices.find(v=>v.voice_id===voiceId);
-  if (voice?.preview_url) {
-    // use existing preview_url
-    const audio = new Audio(voice.preview_url);
-    audio.play();
-    return;
-  }
-  // generate a short sample using ElevenLabs
-  const btn = document.activeElement; // just for visual feedback
-  const originalText = btn.innerText;
-  btn.innerText = '🔄';
+
+  // Generate sample via API as last resort
+  if (btn) btn.textContent = '⏳';
   try {
-    const sampleText = "Hello, this is a sample of my voice.";
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,{
-      method:'POST',
-      headers:{'xi-api-key':EL_KEY,'Content-Type':'application/json','Accept':'audio/mpeg'},
-      body:JSON.stringify({
-        text: sampleText,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings:{ stability:0.5, similarity_boost:0.75 }
-      })
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': EL_KEY, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({ text: 'Hello, this is a sample of my voice.', model_id: 'eleven_turbo_v2_5', voice_settings: { stability: 0.5, similarity_boost: 0.75 } })
     });
-    if (!res.ok) throw new Error('Sample generation failed');
+    if (!res.ok) throw new Error('Failed');
     const blob = await res.blob();
     previewCache.set(voiceId, blob);
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    audio.onended = () => URL.revokeObjectURL(url);
+    currentPreviewAudio = audio;
+    if (btn) btn.textContent = '⏹ Stop';
     audio.play();
+    audio.onended = () => { if (btn) btn.textContent = '▶ Play'; currentPreviewAudio = null; };
   } catch(err) {
-    showToast('Could not play sample: '+err.message, 'error');
-  } finally {
-    btn.innerText = originalText;
+    if (btn) btn.textContent = '▶ Play';
+    showToast('Could not play sample', 'error');
   }
 }
 
@@ -1208,6 +1292,38 @@ function showPage(id,navEl) {
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(navEl) navEl.classList.add('active');
+}
+
+// ── DEMO VOICE PLAYBACK (landing page) ──────────
+const DEMO_VOICES = [
+  { id: '21m00Tcm4TlvDq8ikWAM', url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/21m00Tcm4TlvDq8ikWAM/df6788f9-5c96-470d-8312-aab3b3d8f50a.mp3' },
+  { id: 'TxGEqnHWrfWFTfGW9XjX', url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/TxGEqnHWrfWFTfGW9XjX/118e3eca-7f1d-4f29-af5d-3aff1b8f4c5e.mp3' },
+  { id: 'onwK4e9ZLuTAKqWW03F9', url: 'https://storage.googleapis.com/eleven-public-prod/premade/voices/onwK4e9ZLuTAKqWW03F9/7eee0236-1a72-4b86-b303-5dcaac9f4e3c.mp3' },
+];
+let demoAudio = null;
+
+function playDemoVoice(idx) {
+  if (demoAudio) { demoAudio.pause(); demoAudio = null; }
+  // Reset all demo play buttons
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById('demo-play'+i);
+    if (btn) btn.textContent = '▶';
+    const row = document.getElementById('demo-v'+i);
+    if (row) row.style.background = i === 0 ? 'var(--bg)' : '';
+  }
+  const v = DEMO_VOICES[idx];
+  if (!v) return;
+  const btn = document.getElementById('demo-play'+idx);
+  const row = document.getElementById('demo-v'+idx);
+  if (btn) btn.textContent = '⏹';
+  if (row) row.style.background = 'var(--accent-l)';
+  demoAudio = new Audio(v.url);
+  demoAudio.play().catch(() => {});
+  demoAudio.onended = () => {
+    if (btn) btn.textContent = '▶';
+    if (row) row.style.background = idx === 0 ? 'var(--bg)' : '';
+    demoAudio = null;
+  };
 }
 
 // ── AUTH ─────────────────────────────────────────
@@ -1331,7 +1447,6 @@ async function generateImage() {
   const count = parseInt(document.getElementById('img-count').value);
   const model = document.getElementById('img-model').value;
   const enhance = document.getElementById('img-enhance').checked;
-  const cfg = parseFloat(document.getElementById('cfg-scale').value);
   const [width, height] = ratioToSize(imgRatio);
 
   if (!prompt) { setImgMsg('Please describe the image you want to generate.', 'error'); return; }
@@ -1344,79 +1459,68 @@ async function generateImage() {
   const resultsArea = document.getElementById('img-results-area');
   resultsArea.innerHTML = `<div class="img-result-grid">${Array(count).fill('<div class="img-skeleton"></div>').join('')}</div>`;
 
-  const results = [];
+  window._imgResults = [];
 
-  // Generate sequentially with a small delay to avoid 429 rate limits
   for (let i = 0; i < count; i++) {
     try {
-      if (i > 0) await new Promise(r => setTimeout(r, 1500)); // 1.5s delay between requests
-      const seed = Math.floor(Math.random() * 999999) + i;
-      let fullPrompt = prompt;
-      if (imgStyle && imgStyle !== '') {
-        fullPrompt += `, ${imgStyle} style`;
-      }
+      if (i > 0) await new Promise(r => setTimeout(r, 2000));
 
-      const params = new URLSearchParams({
-        width, height, seed,
-        model,
-        nologo: 'true',
-        enhance: enhance ? 'true' : 'false',
-      });
+      const seed = Math.floor(Math.random() * 2147483647);
+      let fullPrompt = prompt;
+      if (imgStyle) fullPrompt += `, ${imgStyle} style`;
+
+      // Build simple URL — Pollinations works best with minimal params
+      const encodedPrompt = encodeURIComponent(fullPrompt);
+      const params = new URLSearchParams({ width, height, seed, nologo: 'true', model });
+      if (enhance) params.append('enhance', 'true');
       if (negative) params.append('negative_prompt', negative);
 
-      const encodedPrompt = encodeURIComponent(fullPrompt);
-      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?${params.toString()}`;
+      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?${params}`;
 
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Failed (${res.status})`);
+      // Use a 60s timeout — Pollinations can be slow
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!res.ok) throw new Error(`Server error (${res.status}) — try again`);
+
       const blob = await res.blob();
-      results[i] = { url: URL.createObjectURL(blob), blob, prompt: fullPrompt, seed };
+      if (blob.size < 1000) throw new Error('Image too small — try a different prompt');
 
-      // Show results progressively as each one completes
-      window._imgResults = results.filter(r => r && !r.error);
-      const grid = document.querySelector('#img-results-area .img-result-grid');
+      const imgUrl = URL.createObjectURL(blob);
+      window._imgResults.push({ url: imgUrl, blob, prompt: fullPrompt });
+
+      // Update grid progressively
+      const grid = resultsArea.querySelector('.img-result-grid');
       if (grid) {
-        grid.innerHTML = results.map((r, idx) => {
-          if (!r) return '<div class="img-skeleton"></div>';
-          if (r.error) return '<div class="img-skeleton" style="opacity:.3"></div>';
-          return `<div class="img-result-item">
-            <img src="${r.url}" alt="${prompt}" loading="lazy">
-            <div class="img-overlay">
-              <button class="btn-img-dl" onclick="downloadImg(${window._imgResults.indexOf(r)})">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Download
-              </button>
-            </div>
-          </div>`;
-        }).join('');
+        const skeletons = grid.querySelectorAll('.img-skeleton');
+        if (skeletons[i]) {
+          skeletons[i].outerHTML = `
+            <div class="img-result-item">
+              <img src="${imgUrl}" alt="${prompt}">
+              <div class="img-overlay">
+                <button class="btn-img-dl" onclick="downloadImg(${window._imgResults.length - 1})">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download
+                </button>
+              </div>
+            </div>`;
+        }
       }
     } catch(e) {
-      results[i] = { error: e.message };
+      const msg = e.name === 'AbortError' ? 'Timed out — Pollinations is busy, try again' : e.message;
+      if (i === 0) {
+        setImgMsg(msg, 'error');
+        resultsArea.innerHTML = `<div class="img-empty"><div class="img-empty-icon">❌</div><div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px">Generation failed</div><div>${msg}</div></div>`;
+        break;
+      }
     }
   }
 
-  await Promise.resolve(); // no-op, kept for structure
-
-  const ok = results.filter(r => !r.error);
-  const fail = results.filter(r => r.error);
-
-  if (!ok.length) {
-    setImgMsg(fail[0]?.error || 'Generation failed. Please try again.', 'error');
-    resultsArea.innerHTML = '<div class="img-empty"><div class="img-empty-icon">❌</div><div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:4px">Generation failed</div><div>Please try again</div></div>';
-  } else {
-    window._imgResults = ok;
-    resultsArea.innerHTML = `<div class="img-result-grid">${ok.map((r, idx) => `
-      <div class="img-result-item">
-        <img src="${r.url}" alt="${prompt}" loading="lazy">
-        <div class="img-overlay">
-          <button class="btn-img-dl" onclick="downloadImg(${idx})">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download
-          </button>
-        </div>
-      </div>`).join('')}</div>`;
-    if (fail.length) setImgMsg(`${ok.length} images generated, ${fail.length} failed.`, 'info');
-    else showToast(`${ok.length} image${ok.length > 1 ? 's' : ''} generated!`, 'success');
+  if (window._imgResults.length > 0) {
+    showToast(`${window._imgResults.length} image${window._imgResults.length > 1 ? 's' : ''} generated!`, 'success');
   }
 
   btn.disabled = false;
